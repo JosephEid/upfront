@@ -1,0 +1,17 @@
+$honest-white: #eaf3f880;
+$honest-blue: #6aacc6;
+$honest-blue-hover: #6aacc6ad;
+
+
+.job-search-form {
+  button {
+    transition-duration: 0.4s;
+    border: 0;
+    border-radius: 2px;
+    color: white;
+  }
+  
+  button:hover {
+    background-color: $honest-blue-hover;
+  }
+}

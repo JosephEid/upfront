@@ -1,0 +1,15 @@
+$honest-white: #ecf2f5;
+
+.dropdown-menu {
+  right: 0;
+  left: auto;
+}
+
+nav {
+  background-color: $honest-white;
+  color: black;
+}
+
+.navbar-light .navbar-nav .nav-link {
+  color: black !important; 
+}

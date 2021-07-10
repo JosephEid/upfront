@@ -4,9 +4,11 @@ import Nav from 'react-bootstrap/Nav';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import logo from './logo.svg';
 
+import './Header.scss';
+
 const Header = () => {
   return (
-    <Navbar bg="light" expand="lg" sticky="top">
+    <Navbar expand="lg" sticky="top">
       <Navbar.Brand href="#home">
         <img src={logo} alt="HonestJobs" width="200"/>
       </Navbar.Brand>
@@ -14,11 +16,11 @@ const Header = () => {
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
           <Nav.Link href="#home">Home</Nav.Link>
-          <Nav.Link href="#link">Link</Nav.Link>
+          <Nav.Link href="#link">Jobs</Nav.Link>
         </Nav>
         <Nav inline>
-          <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-            <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+          <NavDropdown title="Sign in" id="basic-nav-dropdown">
+            <NavDropdown.Item href="#action/3.1">Sign In</NavDropdown.Item>
             <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
             <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
             <NavDropdown.Divider />

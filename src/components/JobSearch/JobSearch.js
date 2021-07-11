@@ -17,6 +17,40 @@ const JobSearch = () => {
   const [maxOptions, setMaxOptions] = useState(options);
   const [minOptions, setMinOptions] = useState(options);
 
+  useEffect(() => {
+    let newMaxOptions = [];
+    let changeNeeded = false;
+
+    maxOptions.forEach(option => {
+      if (option.props.value < minValue && option.props.disabled !== true)
+      {
+        changeNeeded = true;
+        newMaxOptions.push({
+          ...option,
+          props: {
+            ...option.props,
+            disabled: true
+          }
+        });
+      } else if (option.props.value > minValue && option.props.disabled === true) {
+        newMaxOptions.push({
+          ...option,
+          props: {
+            ...option.props,
+            disabled: false
+          }
+        });
+      } else {
+        newMaxOptions.push(option);
+      };
+    });
+    if (changeNeeded && minValue > maxValue)
+    {
+      setMaxValue(minValue);
+    }
+    setMaxOptions(newMaxOptions);
+  }, [minValue]);
+
   const startSearch = () => {
     console.log(jobValue);
     console.log(value);
@@ -64,8 +98,8 @@ const JobSearch = () => {
           {minOptions}
         </Form.Control>
         <Form.Control value={maxValue} onChange={e => setMaxValue(e.target.value)} as="select">
-          <option value={undefined} hidden>Maximum Salary</option>
           <option value={Infinity}>No Max</option>
+          <option value={undefined} hidden>Maximum Salary</option>
           {maxOptions}
         </Form.Control>
         {isMobile ? (

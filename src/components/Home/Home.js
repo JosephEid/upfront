@@ -8,7 +8,7 @@ const Home = () => {
   return (
     <Jumbotron>
       <Container className="h-opaque">
-        <h1>We Know Salary Matters.</h1>
+        <h1>Salary Matters...</h1>
         <p>
           Welcome to HonestJobs, where recruiters and companies are required to include a salary range for any job posting.
         </p>

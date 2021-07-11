@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
-import { Form, Button, InputGroup } from 'react-bootstrap';
+import { Form, Button, Row, Col } from 'react-bootstrap';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
-import { isMobile } from 'react-device-detect';
 
 import './JobSearch.scss';
 
@@ -12,8 +11,8 @@ const JobSearch = () => {
 
   const [jobValue, setJobValue] = useState("");
   const [value, setLocValue] = useState("");
-  const [minValue, setMinValue] = useState(undefined);
-  const [maxValue, setMaxValue] = useState(undefined);
+  const [minValue, setMinValue] = useState(0);
+  const [maxValue, setMaxValue] = useState(Infinity);
   const [maxOptions, setMaxOptions] = useState(options);
   const [minOptions, setMinOptions] = useState(options);
 
@@ -58,74 +57,68 @@ const JobSearch = () => {
     console.log(maxValue);
   }
 
-  const Content = () => {
-    return (
-      <React.Fragment>
-        <Form.Control value={jobValue} onChange={e => setJobValue(e.target.value)} placeholder="Job title, keywords" />
-        <div>
-          <GooglePlacesAutocomplete
-            className="form-control"
-            selectProps={{
-              placeholder: "Location",
-              value,
-              onChange: setLocValue,
-              styles: {
-                input: () => ({
-                  width: '8em'
-                }),
-                control: (provided) => ({
-                  ...provided,
-                  width: '100%',
-                  height: 'calc(1.5em + .75rem + 2px)',
-                  fontSize: '1rem',
-                  fontWeight: '400',
-                  lineHeight: '1.5',
-                  color: '#495057',
-                  backgroundColor: '#fff',
-                  backgroundClip: 'padding-box',
-                  border: '1px solid #ced4da',
-                  transition: 'border-color .15s ease-in-out,box-shadow .15s ease-in-out',
-                  borderRadius: 0
-                })
-              },  
-            }}
-            debounce={1000}
-          />
-        </div>
-        <Form.Control value={minValue} onChange={e => setMinValue(e.target.value)} as="select">
-          <option value={undefined} hidden>Minimum Salary</option>
-          <option value={0}>No Min</option>
-          {minOptions}
-        </Form.Control>
-        <Form.Control value={maxValue} onChange={e => setMaxValue(e.target.value)} as="select">
-          <option value={Infinity}>No Max</option>
-          <option value={undefined} hidden>Maximum Salary</option>
-          {maxOptions}
-        </Form.Control>
-        {isMobile ? (
+  return (
+    <Form onSubmit={() => startSearch()} className="job-search-form">
+      <Row>
+        <Col>
+          <Form.Control value={jobValue} onChange={e => setJobValue(e.target.value)} placeholder="Job title, keywords" />
+        </Col>
+        <Col>
+          <div>
+            <GooglePlacesAutocomplete
+              className="form-control"
+              selectProps={{
+                placeholder: "Location",
+                value,
+                onChange: setLocValue,
+                styles: {
+                  input: () => ({
+                    width: '8em'
+                  }),
+                  control: (provided) => ({
+                    ...provided,
+                    width: '100%',
+                    height: 'calc(1.5em + .75rem + 2px)',
+                    fontSize: '1rem',
+                    fontWeight: '400',
+                    lineHeight: '1.5',
+                    color: '#495057',
+                    backgroundColor: '#fff',
+                    backgroundClip: 'padding-box',
+                    border: 'none',
+                    borderRadius: '.25rem',
+                    transition: 'border-color .15s ease-in-out,box-shadow .15s ease-in-out',
+                    borderRadius: 0
+                  })
+                },  
+              }}
+              debounce={1000}
+            />
+          </div>
+        </Col>
+        <Col>
+          <Form.Control value={minValue} onChange={e => setMinValue(e.target.value)} as="select">
+            <option hidden>Minimum Salary</option>
+            <option value={null}>No min</option>
+            {minOptions}
+          </Form.Control>
+        </Col>
+        <Col>
+          <Form.Control value={maxValue} onChange={e => setMaxValue(e.target.value)} as="select">
+            <option hidden>Maximum Salary</option>
+            <option value={null}>No max</option>
+            {maxOptions}
+          </Form.Control>
+        </Col>
+        {/* <Col sm="2"> */}
+        <div className="form-button">
           <Button type="submit">
             Search
           </Button>
-        ) : (
-          <InputGroup.Append>
-            <Button type="submit">
-              Search
-            </Button>
-          </InputGroup.Append>
-        )}
-      </React.Fragment>
-    );
-  };
-
-  return (
-    <Form onSubmit={() => startSearch()} className="job-search-form">
-      {isMobile ? (
-        <Content />
-      ) : (
-        <InputGroup>
-          <Content />
-        </InputGroup>
-      )}
+        </div>
+          
+        {/* </Col> */}
+      </Row>
     </Form>
   );
 };

@@ -9,9 +9,12 @@ $honest-blue: #6aacc6;
   border-radius: 0;
 }
 
+.h-opaque {
+  background-color: $honest-white;
+}
+
 .job-search-form {
   padding: 15px;
-  background-color: $honest-white;
   .col {
     padding-right: 0px;
   }

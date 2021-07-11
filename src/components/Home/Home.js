@@ -7,12 +7,15 @@ import './Home.scss';
 const Home = () => {
   return (
     <Jumbotron>
-      <Container>
-      <h1>Hello!</h1>
-      <p>
-        Welcome to HonestJobs, where all Job Postings must contain a salary range.
-      </p>
-      <JobSearch />
+      <Container className="h-opaque">
+        <h1>We Know Salary Matters.</h1>
+        <p>
+          Welcome to HonestJobs, where recruiters and companies are required to include a salary range for any job posting.
+        </p>
+        <p>
+          Start your search for honest job postings below!
+        </p>
+        <JobSearch />
       </Container>
     </Jumbotron>
   );

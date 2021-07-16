@@ -1,3 +1,21 @@
+@font-face {
+  font-family: roboSlab;
+  src: url(fonts/Roboto_Slab/RobotoSlab-VariableFont_wght.ttf);
+}
+
+@font-face {
+  font-family: lato;
+  src: url(fonts/Lato/Lato-Regular.ttf);
+}
+
 .App {
   text-align: center;
+}
+
+h1, h2, h3, a {
+  font-family: lato;
+}
+
+p, input {
+  font-family: roboSlab;
 }

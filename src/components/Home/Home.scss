@@ -1,16 +1,9 @@
 $honest-white: #eaf3f880;
 $honest-blue: #6aacc6;
 
-.jumbotron {
-  background-image: url("../../images/londoncity.jpg");
-  background-repeat: no-repeat;
-  background-size: cover;
-  height: 100%;
-  border-radius: 0 !important;
-}
-
 .h-opaque {
   background-color: $honest-white;
+  border-radius: 5px;
 }
 
 .job-search-form {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
+import { Link } from 'react-router-dom';
 
 import './JobSearch.scss';
 
@@ -111,14 +112,13 @@ const JobSearch = () => {
             {maxOptions}
           </Form.Control>
         </Col>
-        {/* <Col sm="2"> */}
         <div className="form-button">
-          <Button type="submit">
-            Search
-          </Button>
+          <Link to="/jobs" replace>
+            <Button>
+              Search
+            </Button>
+          </Link>
         </div>
-          
-        {/* </Col> */}
       </Row>
     </Form>
   );

@@ -9,14 +9,13 @@ import './Header.scss';
 const Header = () => {
   return (
     <Navbar expand="lg" sticky="top">
-      <Navbar.Brand href="#home">
+      <Navbar.Brand href="/">
         <img src={logo} alt="HonestJobs" width="200"/>
       </Navbar.Brand>
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
-          <Nav.Link href="#home">Home</Nav.Link>
-          <Nav.Link href="#link">Jobs</Nav.Link>
+          <Nav.Link href="/">Home</Nav.Link>
         </Nav>
         <Nav inline>
           <NavDropdown title="Sign in" id="basic-nav-dropdown">

@@ -14,6 +14,7 @@ const JobSearch = () => {
   const [minValue, setMinValue] = useState(0);
   const [maxValue, setMaxValue] = useState(Infinity);
   const [maxOptions, setMaxOptions] = useState(options);
+  // eslint-disable-next-line
   const [minOptions, setMinOptions] = useState(options);
 
   useEffect(() => {
@@ -48,6 +49,7 @@ const JobSearch = () => {
       setMaxValue(minValue);
     }
     setMaxOptions(newMaxOptions);
+    // eslint-disable-next-line
   }, [minValue]);
 
   const startSearch = () => {
@@ -86,7 +88,6 @@ const JobSearch = () => {
                     backgroundColor: '#fff',
                     backgroundClip: 'padding-box',
                     border: 'none',
-                    borderRadius: '.25rem',
                     transition: 'border-color .15s ease-in-out,box-shadow .15s ease-in-out',
                     borderRadius: 0
                   })

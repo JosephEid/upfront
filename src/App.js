@@ -6,6 +6,8 @@ import { BrowserRouter, Switch, Route } from 'react-router-dom';
 import './App.css';
 import { Jumbotron } from 'react-bootstrap';
 
+import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react'
+
 function App() {
   const screenHeight = window.innerHeight
 
@@ -14,6 +16,8 @@ function App() {
       <div className="App">
         <Header />
         <main style={{ height: `${screenHeight}px` }}>
+        {/* <AmplifySignOut /> */}
+
           <Jumbotron>
             <Switch>
               <Route path="/jobs">
@@ -31,4 +35,5 @@ function App() {
   );
 }
 
+// export default withAuthenticator(App);
 export default App;

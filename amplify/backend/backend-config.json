@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "upfront9b8c6868": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
+}

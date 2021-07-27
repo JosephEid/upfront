@@ -1,0 +1,10 @@
+type Posting @model {
+  id: ID!
+  title: String!
+  description: String
+  location: String
+  minSalary: Int
+  maxSalary: Int
+  createdBy: String
+  updatedBy: String
+}

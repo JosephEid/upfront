@@ -35,7 +35,7 @@ const CreatePostingForm = () => {
   }
 
   return (
-    <Form onSubmit={() => createPosting()} className="create-posting-form">
+    <Form className="create-posting-form">
       <Form.Group className="mb-3" controlId="formJobTitle">
         <Form.Label>Job title</Form.Label>
         <Form.Control required value={jobValue} onChange={e => setJobValue(e.target.value)} placeholder="e.g. Software Developer, Clinical Psychologist" />
@@ -98,7 +98,7 @@ const CreatePostingForm = () => {
       </Form.Group>
       
       <div className="form-button">
-        <Button type="submit">
+        <Button onClick={() => createPosting()}>
           Create
         </Button>
       </div>

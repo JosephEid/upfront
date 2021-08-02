@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
 import { API } from 'aws-amplify';
 
-import { createPosting as createPostingMutation, deletePosting as deletePostingMutation } from '../../graphql/mutations';
+import { createPosting as createPostingMutation } from '../../graphql/mutations';
 
 import './CreatePostingForm.scss';
 
@@ -26,12 +26,6 @@ const CreatePostingForm = () => {
     }
 
     await API.graphql({ query: createPostingMutation, variables: { input: posting } });
-
-    console.log(jobValue);
-    console.log(value.value.description);
-    console.log(minValue);
-    console.log(maxValue);
-    console.log(description);
   }
 
   return (

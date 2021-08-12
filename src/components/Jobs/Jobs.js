@@ -1,43 +1,41 @@
-import React, { useEffect, useState } from 'react'
-import { listPostings } from '../../graphql/queries';
-import { API } from 'aws-amplify';
-import { Card, CardGroup } from 'react-bootstrap';
+import React from 'react';
+import { Card, Row, Col } from 'react-bootstrap';
+import logo from '../../images/logonewsmall.svg';
 
-const Jobs = () => {
-  const [postings, setPostings] = useState([]);
+import './Jobs.scss';
 
-  useEffect(() => {
-    if (postings.length === 0) 
-    {
-      fetchPostings();
-    }
-  });
-
-  async function fetchPostings() {
-    const apiData = await API.graphql({ query: listPostings });
-    console.log(apiData);
-    setPostings(apiData.data.listPostings.items);
-  }
-
+const Jobs = (props) => {
   return (
     <div>
-      <CardGroup>
-      {
-        postings.map(posting => (
-          <Card style={{ width: '18rem' }}>
-            <Card.Body>
-              <Card.Title>{posting.title}</Card.Title>
-              <Card.Subtitle className="mb-2 text-muted">{posting.location}</Card.Subtitle>
-              <Card.Text>
-                {posting.description}
-              </Card.Text>
-              <Card.Link href="#">Card Link</Card.Link>
-              <Card.Link href="#">Another Link</Card.Link>
-            </Card.Body>
-          </Card>
-        ))
-      }
-      </CardGroup>
+      <Row xs={1} md={2} className="g-4">
+        {props.postings.map(posting => (
+          <Col>
+            <Card>
+              <Card.Body>
+                <Row>
+                  <Col xs={3} style={{paddingRight: "0px"}}>
+                    <img src={logo} className="card-logo" alt="company logo, this needs to be populated!"/>
+                  </Col>
+                  <Col style={{paddingLeft: "0px", textAlign: "left"}}>
+                    <Card.Title style={{marginBottom: "0.5rem"}}>{posting.title}</Card.Title>
+                    <Card.Subtitle className="mb-2 text-muted">Google</Card.Subtitle>
+                    <Card.Subtitle style={{fontSize: "14px"}}className="mb-3 text-muted">{posting.location}</Card.Subtitle>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Card.Text style={{textAlign: "left", fontSize: "14px", overflowY: "hidden"}}>
+                      {posting.description}
+                    </Card.Text>
+                  </Col>
+                </Row>
+                <Card.Link href="#">Card Link</Card.Link>
+                <Card.Link href="#">Another Link</Card.Link>
+              </Card.Body>
+            </Card>
+          </Col>
+        ))}
+      </Row>
     </div>
   );
 };

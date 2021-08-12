@@ -10,14 +10,12 @@ import './Header.scss';
 const Header = () => {
   return (
     <Navbar expand="lg" sticky="top">
-      <Link to="/" className="h-navbarbrand" replace>
-        <img src={logo} alt="HonestJobs" width="200"/>
-      </Link>
+      
       <Navbar.Toggle aria-controls="basic-navbar-nav" />
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
-          <Link to="/" className="h-navlink" replace>
-            Home
+          <Link to="/" className="h-navbarbrand" replace>
+            <img src={logo} alt="HonestJobs" width="200"/>
           </Link>
         </Nav>
         <Nav inline={+true}>

@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import GooglePlacesAutocomplete from 'react-google-places-autocomplete';
-import { Link } from 'react-router-dom';
 
 import './JobSearch.scss';
 
-const JobSearch = () => {
+const JobSearch = (props) => {
   const options = Array.from({length: 10}, (_, i) => i + 1).map((value) => 
     <option value={value*10000}>{`£${value}0,000`}</option>
   );
@@ -53,18 +52,11 @@ const JobSearch = () => {
     // eslint-disable-next-line
   }, [minValue]);
 
-  const startSearch = () => {
-    console.log(jobValue);
-    console.log(value);
-    console.log(minValue);
-    console.log(maxValue);
-  }
-
   return (
-    <Form onSubmit={() => startSearch()} className="job-search-form">
+    <Form onSubmit="return false" className="job-search-form">
       <Row>
         <Col>
-          <Form.Control value={jobValue} onChange={e => setJobValue(e.target.value)} placeholder="Job title, keywords" />
+          <Form.Control value={jobValue} onChange={e => setJobValue(e.target.value)} placeholder="Job title, keywords" required/>
         </Col>
         <Col>
           <div>
@@ -85,6 +77,7 @@ const JobSearch = () => {
                     fontSize: '1rem',
                     fontWeight: '400',
                     lineHeight: '1.5',
+                    textAlign: 'left',
                     color: '#495057',
                     backgroundColor: '#fff',
                     backgroundClip: 'padding-box',
@@ -113,11 +106,9 @@ const JobSearch = () => {
           </Form.Control>
         </Col>
         <div className="form-button">
-          <Link to="/jobs" replace>
-            <Button>
-              Search
-            </Button>
-          </Link>
+          <Button onClick={() => props.fetchPostings()}>
+            Search
+          </Button>
         </div>
       </Row>
     </Form>

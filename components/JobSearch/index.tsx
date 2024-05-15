@@ -51,7 +51,8 @@ export default function JobSearch() {
     };
 
     const displaySuggestions = (value: string) => {
-        console.log("here");
+        setLocation(value);
+        value = value.toLowerCase();
         if (value.length <= 1) {
             setLocationSuggestions([]);
             return;
@@ -74,48 +75,71 @@ export default function JobSearch() {
                     direction={["column", "row"]}
                     justifyContent={"space-between"}
                 >
-                    <Input
-                        type="text"
-                        placeholder="Skills, Company"
-                        onChange={(e) => setCriteria(e.target.value)}
-                        minWidth={"27.5%"}
-                    />
-                    <VStack minWidth={"27.5%"}>
+                    <Box width="100%">
                         <Input
                             type="text"
-                            placeholder="City, Country"
-                            onChange={(e) =>
-                                e.target.value.length > 1 &&
-                                displaySuggestions(e.target.value.toLowerCase())
-                            }
+                            placeholder="Skills, Company"
+                            onChange={(e) => setCriteria(e.target.value)}
                         />
-                        {locationSuggestions.length > 0 && (
-                            <Box
-                                borderRadius={"0.375rem"}
-                                border={"1px solid"}
-                                paddingInline={"1rem"}
-                                width={"100%"}
-                            >
-                                {locationSuggestions.map((x) => (
-                                    <Text>
-                                        {x.city}, {x.country}
-                                    </Text>
-                                ))}
-                            </Box>
-                        )}
-                    </VStack>
+                    </Box>
 
-                    <Select minWidth={"27.5%"}>{getSalaries()}</Select>
-                    <Button
-                        minWidth={"17.5%"}
-                        onClick={() => validateOrLoad()}
-                        bg={"upfront.300"}
-                        _hover={{
-                            bg: "upfront.200",
-                        }}
-                    >
-                        Submit
-                    </Button>
+                    <Box width="100%">
+                        <VStack gap="0.25rem">
+                            <Input
+                                type="text"
+                                placeholder="City, Country"
+                                onChange={(e) =>
+                                    displaySuggestions(e.target.value)
+                                }
+                                value={location}
+                            />
+                            {locationSuggestions.length > 0 && (
+                                <Box
+                                    borderRadius={"0.375rem"}
+                                    border={"1px solid"}
+                                    borderColor={"#e2e8f0"}
+                                    width={"100%"}
+                                >
+                                    {locationSuggestions.map((x) => (
+                                        <Text
+                                            as="button"
+                                            _hover={{
+                                                bg: "gray.200",
+                                            }}
+                                            width={"100%"}
+                                            paddingInline={"0.5rem"}
+                                            my="0.25rem"
+                                            onClick={() => {
+                                                setLocation(
+                                                    `${x.city}, ${x.country}`
+                                                );
+                                                setLocationSuggestions([]);
+                                            }}
+                                        >
+                                            {x.city}, {x.country}
+                                        </Text>
+                                    ))}
+                                </Box>
+                            )}
+                        </VStack>
+                    </Box>
+
+                    <Box width="100%">
+                        <Select>{getSalaries()}</Select>
+                    </Box>
+                    <Box>
+                        <Button
+                            onClick={() => validateOrLoad()}
+                            bg={"upfront.300"}
+                            _hover={{
+                                bg: "upfront.200",
+                            }}
+                            minWidth={"4rem"}
+                            width={"100%"}
+                        >
+                            Submit
+                        </Button>
+                    </Box>
                 </Stack>
             </FormControl>
         </Box>

@@ -14,6 +14,7 @@ import {
     useColorModeValue,
     useBreakpointValue,
     useDisclosure,
+    Image,
 } from "@chakra-ui/react";
 import {
     HamburgerIcon,
@@ -37,6 +38,8 @@ export default function Navbar() {
                 borderColor={useColorModeValue("gray.200", "gray.900")}
                 align={"center"}
                 width={"100%"}
+                alignItems={"center"}
+                justifyContent={"space-between"}
             >
                 <Flex
                     flex={{ base: 1, md: "auto" }}
@@ -59,19 +62,17 @@ export default function Navbar() {
                 <Flex
                     flex={{ base: 1 }}
                     justify={{ base: "center", md: "start" }}
+                    alignItems={"center"}
                 >
-                    <Text
-                        textAlign={useBreakpointValue({
-                            base: "center",
-                            md: "left",
-                        })}
-                        fontFamily={"heading"}
-                        color={useColorModeValue("gray.800", "white")}
-                    >
-                        Logo
-                    </Text>
+                    <Image
+                        src="/upfront/svg/logo-no-background.svg"
+                        width="10rem"
+                    />
 
-                    <Flex display={{ base: "none", md: "flex" }} ml={10}>
+                    <Flex
+                        display={{ base: "none", md: "flex" }}
+                        verticalAlign={"middle"}
+                    >
                         <DesktopNav />
                     </Flex>
                 </Flex>
@@ -112,7 +113,7 @@ const DesktopNav = () => {
     const popoverContentBgColor = useColorModeValue("white", "gray.800");
 
     return (
-        <Stack direction={"row"} spacing={4}>
+        <Stack direction={"row"} spacing={4} verticalAlign={"middle"}>
             {NAV_ITEMS.map((navItem) => (
                 <Box key={navItem.label}>
                     <Popover trigger={"hover"} placement={"bottom-start"}>

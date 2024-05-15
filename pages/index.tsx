@@ -24,7 +24,7 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <Container maxWidth={{ base: "100%", md: "80%" }}>
+                <Container maxWidth={{ base: "100%", md: "70%", lg: "60%" }}>
                     <Navbar />
                     <HStack justifyContent={"space-between"}>
                         <Text>Upfront Jobs</Text>

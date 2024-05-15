@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 import Navbar from "../components/Navbar";
 import { Button, Container, HStack, Text } from "@chakra-ui/react";
+import JobSearch from "@/components/JobSearch";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +24,7 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <main>
-                <Container maxWidth={{ base: "100%", md: "70%" }}>
+                <Container maxWidth={{ base: "100%", md: "80%" }}>
                     <Navbar />
                     <HStack justifyContent={"space-between"}>
                         <Text>Upfront Jobs</Text>
@@ -33,10 +34,11 @@ export default function Home() {
                         Carefully selected job postings where salary ranges are
                         guaranteed to be listed.
                     </Text>
-                    <Text fontWeight={700}>
+                    <Text fontWeight={700} mb="1rem">
                         Data-driven insights into job posting performance for
                         recruiters and companies.
                     </Text>
+                    <JobSearch />
                 </Container>
             </main>
         </>

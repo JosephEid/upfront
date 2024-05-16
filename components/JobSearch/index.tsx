@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import locations from "./locations.json";
+import jobSkills from "./jobSkills.json";
 
 interface Location {
     city: string;
@@ -23,6 +24,9 @@ export default function JobSearch() {
     const [criteria, setCriteria] = useState("");
     const [location, setLocation] = useState("");
     const [locationSuggestions, setLocationSuggestions] = useState<Location[]>(
+        []
+    );
+    const [criteriaSuggestions, setCriteriaSuggestions] = useState<string[]>(
         []
     );
 
@@ -50,7 +54,7 @@ export default function JobSearch() {
         }
     };
 
-    const displaySuggestions = (value: string) => {
+    const displayLocationSuggestions = (value: string) => {
         setLocation(value);
         value = value.toLowerCase();
         if (value.length <= 1) {
@@ -67,9 +71,26 @@ export default function JobSearch() {
         setLocationSuggestions(suggestions);
     };
 
+    const displayCriteriaSuggestions = (value: string) => {
+        setCriteria(value);
+        value = value.toLowerCase();
+        if (value.length <= 1) {
+            setCriteriaSuggestions([]);
+            return;
+        }
+
+        const suggestions = (jobSkills as string[]).filter((x) =>
+            x.toLowerCase().includes(value)
+        );
+
+        setCriteriaSuggestions(suggestions);
+    };
+
     return (
         <Box>
-            <Text fontWeight="700">Job Search:</Text>
+            <Text fontWeight="700" mb="1rem">
+                Job Search:
+            </Text>
             <FormControl>
                 <Stack
                     direction={["column", "row"]}
@@ -79,8 +100,37 @@ export default function JobSearch() {
                         <Input
                             type="text"
                             placeholder="Skills, Company"
-                            onChange={(e) => setCriteria(e.target.value)}
+                            onChange={(e) =>
+                                displayCriteriaSuggestions(e.target.value)
+                            }
+                            value={criteria}
                         />
+                        {criteriaSuggestions.length > 0 && (
+                            <Box
+                                borderRadius={"0.375rem"}
+                                border={"1px solid"}
+                                borderColor={"#e2e8f0"}
+                                width={"100%"}
+                            >
+                                {criteriaSuggestions.map((x) => (
+                                    <Text
+                                        as="button"
+                                        _hover={{
+                                            bg: "gray.200",
+                                        }}
+                                        width={"100%"}
+                                        paddingInline={"0.5rem"}
+                                        my="0.25rem"
+                                        onClick={() => {
+                                            setCriteria(x);
+                                            setCriteriaSuggestions([]);
+                                        }}
+                                    >
+                                        {x}
+                                    </Text>
+                                ))}
+                            </Box>
+                        )}
                     </Box>
 
                     <Box width="100%">
@@ -89,7 +139,7 @@ export default function JobSearch() {
                                 type="text"
                                 placeholder="City, Country"
                                 onChange={(e) =>
-                                    displaySuggestions(e.target.value)
+                                    displayLocationSuggestions(e.target.value)
                                 }
                                 value={location}
                             />

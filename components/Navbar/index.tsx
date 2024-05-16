@@ -59,6 +59,7 @@ export default function Navbar() {
                         aria-label={"Toggle Navigation"}
                     />
                 </Flex>
+
                 <Flex
                     flex={{ base: 1 }}
                     justify={{ base: "center", md: "start" }}
@@ -66,12 +67,13 @@ export default function Navbar() {
                 >
                     <Image
                         src="/upfront/svg/logo-no-background.svg"
-                        width="10rem"
+                        width="6rem"
                     />
 
                     <Flex
                         display={{ base: "none", md: "flex" }}
                         verticalAlign={"middle"}
+                        ml="1rem"
                     >
                         <DesktopNav />
                     </Flex>

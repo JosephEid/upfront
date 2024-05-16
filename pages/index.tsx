@@ -21,7 +21,10 @@ export default function Home() {
                     name="viewport"
                     content="width=device-width, initial-scale=1"
                 />
-                <link rel="icon" href="/upfront/svg/logo-no-background.svg" />
+                <link
+                    rel="icon"
+                    href="/upfront/svg/favicon-no-background.svg"
+                />
             </Head>
             <main>
                 <Container maxWidth={{ base: "100%", md: "70%", lg: "60%" }}>

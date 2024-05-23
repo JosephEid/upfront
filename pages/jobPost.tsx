@@ -67,7 +67,7 @@ export default function Home() {
                             // }
                             // value={criteria}
                         />
-                        <HStack>
+                        <HStack width="100%">
                             <Input
                                 type="number"
                                 placeholder="Min Annual Salary"
@@ -100,7 +100,10 @@ export default function Home() {
                         <Input type="text" placeholder="Company Name" />
                         <Input type="text" placeholder="Company Website" />
                         <SimpleMdeReact
-                            style={{ fontSize: "60px", maxWidth: "600px" }}
+                            style={{
+                                width: "100%",
+                                borderColor: "var(--chakra-colors-gray-200)",
+                            }}
                             value={value}
                             onChange={onChange}
                         />

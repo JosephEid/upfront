@@ -22,9 +22,11 @@ import {
     ChevronDownIcon,
     ChevronRightIcon,
 } from "@chakra-ui/icons";
+import { NextRouter, useRouter } from "next/router";
 
 export default function Navbar() {
     const { isOpen, onToggle } = useDisclosure();
+    const router = useRouter();
 
     return (
         <Box mb="1rem">
@@ -75,7 +77,7 @@ export default function Navbar() {
                         verticalAlign={"middle"}
                         ml="1rem"
                     >
-                        <DesktopNav />
+                        <DesktopNav router={router} />
                     </Flex>
                 </Flex>
 
@@ -109,7 +111,7 @@ export default function Navbar() {
     );
 }
 
-const DesktopNav = () => {
+const DesktopNav = (props: any) => {
     const linkColor = useColorModeValue("gray.600", "gray.200");
     const linkHoverColor = useColorModeValue("gray.800", "white");
     const popoverContentBgColor = useColorModeValue("white", "gray.800");
@@ -122,7 +124,7 @@ const DesktopNav = () => {
                         <PopoverTrigger>
                             <Link
                                 p={2}
-                                href={navItem.href ?? "#"}
+                                // href={navItem.href ?? "#"}
                                 fontSize={"sm"}
                                 fontWeight={500}
                                 color={linkColor}
@@ -130,6 +132,7 @@ const DesktopNav = () => {
                                     textDecoration: "none",
                                     color: linkHoverColor,
                                 }}
+                                onClick={() => props.router.push(navItem.href)}
                             >
                                 {navItem.label}
                             </Link>
@@ -287,6 +290,7 @@ interface NavItem {
 const NAV_ITEMS: Array<NavItem> = [
     {
         label: "Jobs",
+        href: "/",
     },
     {
         label: "Salaries",

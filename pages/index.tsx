@@ -5,10 +5,12 @@ import styles from "@/styles/Home.module.css";
 import Navbar from "../components/Navbar";
 import { Button, Container, HStack, Text } from "@chakra-ui/react";
 import JobSearch from "@/components/JobSearch";
+import { useRouter } from "next/router";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export default function Home() {
+    const router = useRouter();
     return (
         <>
             <Head>
@@ -31,7 +33,9 @@ export default function Home() {
                     <Navbar />
                     <HStack justifyContent={"space-between"}>
                         <Text>Upfront Jobs</Text>
-                        <Button>Post a job</Button>
+                        <Button as="a" onClick={() => router.push("/jobPost")}>
+                            Post a job
+                        </Button>
                     </HStack>
                     <Text fontWeight={700} my="1rem">
                         Carefully selected job postings where salary ranges are

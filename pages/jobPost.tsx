@@ -16,11 +16,12 @@ import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 
 export default function Home() {
-    const [value, setValue] = useState("Initial value");
+    const [value, setValue] = useState("Write your Job Description here!");
 
     const onChange = useCallback((value: string) => {
         setValue(value);
     }, []);
+
     return (
         <>
             <Head>
@@ -98,7 +99,11 @@ export default function Home() {
                         </HStack>
                         <Input type="text" placeholder="Company Name" />
                         <Input type="text" placeholder="Company Website" />
-                        <SimpleMdeReact value={value} onChange={onChange} />
+                        <SimpleMdeReact
+                            style={{ fontSize: "60px", maxWidth: "600px" }}
+                            value={value}
+                            onChange={onChange}
+                        />
                     </VStack>
                 </Container>
             </main>

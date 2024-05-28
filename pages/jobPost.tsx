@@ -1,6 +1,9 @@
 import Head from "next/head";
 import Navbar from "../components/Navbar";
 import {
+    Box,
+    Button,
+    Center,
     Container,
     HStack,
     Input,
@@ -14,6 +17,7 @@ const SimpleMdeReact = dynamic(() => import("react-simplemde-editor"), {
 import { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
+import { PlusSquareIcon } from "@chakra-ui/icons";
 
 export default function Home() {
     const [value, setValue] = useState("Write your Job Description here!");
@@ -21,6 +25,8 @@ export default function Home() {
     const onChange = useCallback((value: string) => {
         setValue(value);
     }, []);
+
+    const [file, setFile] = useState<File>();
 
     return (
         <>
@@ -43,71 +49,95 @@ export default function Home() {
                 <Container maxWidth={{ base: "100%", md: "70%", lg: "60%" }}>
                     <Navbar />
                     <Text mb="1rem">Post a Job</Text>
-                    <Text fontWeight={"700"}>
+                    <Text fontWeight={"700"} mb="1rem">
                         We require that companies are Upfront about their
                         salaries. All job postings must contain a salary range.
                     </Text>
-                    <Text fontWeight={"700"} fontSize={"2rem"}>
-                        Create a Job Post:
-                    </Text>
-                    <VStack width="70%">
-                        <Input
-                            type="text"
-                            placeholder="Job Title"
-                            // onChange={(e) =>
-                            //     // displayCriteriaSuggestions(e.target.value)
-                            // }
-                            // value={criteria}
-                        />
-                        <Input
-                            type="text"
-                            placeholder="Job Location"
-                            // onChange={(e) =>
-                            //     // displayCriteriaSuggestions(e.target.value)
-                            // }
-                            // value={criteria}
-                        />
-                        <HStack width="100%">
+                    <Center>
+                        <VStack width="80%" alignItems={"start"}>
+                            <Text
+                                fontWeight={"700"}
+                                fontSize={"2rem"}
+                                mb="0.5rem"
+                            >
+                                Create a Job Post:
+                            </Text>
                             <Input
-                                type="number"
-                                placeholder="Min Annual Salary"
+                                type="text"
+                                placeholder="Job Title"
+                                mb="0.5rem"
                                 // onChange={(e) =>
                                 //     // displayCriteriaSuggestions(e.target.value)
                                 // }
-                                // // value={criteria}
+                                // value={criteria}
                             />
                             <Input
-                                type="number"
-                                placeholder="Max Annual Salary"
+                                type="text"
+                                placeholder="Job Location"
+                                mb="0.5rem"
                                 // onChange={(e) =>
                                 //     // displayCriteriaSuggestions(e.target.value)
                                 // }
-                                // // value={criteria}
+                                // value={criteria}
                             />
-                            <Select>
-                                <option>GBP</option>
-                                <option>USD</option>
-                                <option>EUR</option>
-                                <option>AUD</option>
-                                <option>CAD</option>
-                                <option>SGD</option>
-                                <option>CHF</option>
-                                <option>INR</option>
-                                <option>JPY</option>
-                            </Select>
-                            <Text>a year</Text>
-                        </HStack>
-                        <Input type="text" placeholder="Company Name" />
-                        <Input type="text" placeholder="Company Website" />
-                        <SimpleMdeReact
-                            style={{
-                                width: "100%",
-                                borderColor: "var(--chakra-colors-gray-200)",
-                            }}
-                            value={value}
-                            onChange={onChange}
-                        />
-                    </VStack>
+                            <HStack width="100%" mb="0.5rem">
+                                <Input
+                                    type="number"
+                                    placeholder="Min Annual Salary"
+                                    // onChange={(e) =>
+                                    //     // displayCriteriaSuggestions(e.target.value)
+                                    // }
+                                    // // value={criteria}
+                                />
+                                <Input
+                                    type="number"
+                                    placeholder="Max Annual Salary"
+                                    // onChange={(e) =>
+                                    //     // displayCriteriaSuggestions(e.target.value)
+                                    // }
+                                    // // value={criteria}
+                                />
+                                <Select>
+                                    <option>GBP</option>
+                                    <option>USD</option>
+                                    <option>EUR</option>
+                                    <option>AUD</option>
+                                    <option>CAD</option>
+                                    <option>SGD</option>
+                                    <option>CHF</option>
+                                    <option>INR</option>
+                                    <option>JPY</option>
+                                </Select>
+                                <Text>a year</Text>
+                            </HStack>
+                            <Input
+                                type="text"
+                                placeholder="Company Name"
+                                mb="0.5rem"
+                            />
+                            <Input
+                                type="text"
+                                placeholder="Company Website"
+                                mb="0.5rem"
+                            />
+                            <Input
+                                type="file"
+                                accept="image/*"
+                                border={"none"}
+                                onChange={(e) =>
+                                    e.target.files && setFile(e.target.files[0])
+                                }
+                                pl="0"
+                            />
+                            <SimpleMdeReact
+                                style={{
+                                    width: "100%",
+                                }}
+                                value={value}
+                                onChange={onChange}
+                            />
+                        </VStack>
+                    </Center>
                 </Container>
             </main>
         </>

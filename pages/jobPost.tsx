@@ -4,8 +4,10 @@ import {
     Box,
     Button,
     Center,
+    Checkbox,
     Container,
     HStack,
+    Icon,
     Input,
     Select,
     Text,
@@ -14,19 +16,35 @@ import {
 const SimpleMdeReact = dynamic(() => import("react-simplemde-editor"), {
     ssr: false,
 });
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
-import { PlusSquareIcon } from "@chakra-ui/icons";
+import { AddIcon, PlusSquareIcon } from "@chakra-ui/icons";
 
 export default function Home() {
-    const [value, setValue] = useState("Write your Job Description here!");
-
+    const hiddenFileInput = useRef(null);
+    const [description, setDescription] = useState(
+        "Write your Job Description here!"
+    );
+    const [visaSponsorship, setVisaSponsorship] = useState(false);
     const onChange = useCallback((value: string) => {
-        setValue(value);
+        setDescription(value);
     }, []);
 
     const [file, setFile] = useState<File>();
+
+    const handleClick = () => {
+        if (hiddenFileInput.current) {
+            (hiddenFileInput?.current as any).click();
+        }
+    };
+
+    const handleChange = (event: any) => {
+        const fileUploaded = event.target.files[0];
+        setFile(fileUploaded);
+    };
+
+    console.log(visaSponsorship);
 
     return (
         <>
@@ -46,7 +64,10 @@ export default function Home() {
                 />
             </Head>
             <main>
-                <Container maxWidth={{ base: "100%", md: "70%", lg: "60%" }}>
+                <Container
+                    maxWidth={{ base: "100%", md: "70%", lg: "60%" }}
+                    mb="1rem"
+                >
                     <Navbar />
                     <Text mb="1rem">Post a Job</Text>
                     <Text fontWeight={"700"} mb="1rem">
@@ -54,7 +75,7 @@ export default function Home() {
                         salaries. All job postings must contain a salary range.
                     </Text>
                     <Center>
-                        <VStack width="80%" alignItems={"start"}>
+                        <VStack width="80%" alignItems={"start"} mb="1rem">
                             <Text
                                 fontWeight={"700"}
                                 fontSize={"2rem"}
@@ -120,21 +141,64 @@ export default function Home() {
                                 placeholder="Company Website"
                                 mb="0.5rem"
                             />
-                            <Input
-                                type="file"
-                                accept="image/*"
-                                border={"none"}
-                                onChange={(e) =>
-                                    e.target.files && setFile(e.target.files[0])
-                                }
-                                pl="0"
-                            />
+                            <HStack>
+                                <Button
+                                    className="button-upload"
+                                    onClick={handleClick}
+                                    bg={"upfront.300"}
+                                    _hover={{
+                                        bg: "upfront.200",
+                                    }}
+                                    color="white"
+                                    mb="0.5rem"
+                                >
+                                    <AddIcon mr="0.5rem" />
+                                    Upload Company Logo
+                                </Button>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleChange}
+                                    ref={hiddenFileInput}
+                                    style={{ display: "none" }} // Make the file input element invisible
+                                />
+                                {file && <Text>{file.name}</Text>}
+                            </HStack>
+
                             <SimpleMdeReact
                                 style={{
                                     width: "100%",
                                 }}
-                                value={value}
+                                value={description}
                                 onChange={onChange}
+                            />
+
+                            <Checkbox
+                                mb="0.5rem"
+                                onChange={() =>
+                                    setVisaSponsorship(!visaSponsorship)
+                                }
+                            >
+                                VISA Sponsorship offered?
+                            </Checkbox>
+
+                            <Input
+                                type="text"
+                                placeholder="How to apply (Email or URL)"
+                                mb="0.5rem"
+                                // onChange={(e) =>
+                                //     // displayCriteriaSuggestions(e.target.value)
+                                // }
+                                // value={criteria}
+                            />
+                            <Input
+                                type="text"
+                                placeholder="Your email (will be used to log in)"
+                                mb="0.5rem"
+                                // onChange={(e) =>
+                                //     // displayCriteriaSuggestions(e.target.value)
+                                // }
+                                // value={criteria}
                             />
                         </VStack>
                     </Center>

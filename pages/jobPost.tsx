@@ -8,6 +8,7 @@ import {
     Container,
     HStack,
     Icon,
+    Image,
     Input,
     Select,
     Text,
@@ -21,26 +22,26 @@ import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import { AddIcon } from "@chakra-ui/icons";
 import Markdown from "react-markdown";
-import { Image } from "@chakra-ui/next-js";
 
 export default function Home() {
     const hiddenFileInput = useRef(null);
-    const [title, setTitle] = useState("");
-    const [location, setLocation] = useState("");
-    const [minimumSalary, setMinimumSalary] = useState("");
-    const [maximumSalary, setMaximumSalary] = useState("");
-    const [currency, setCurrency] = useState("");
+    const [title, setTitle] = useState<string>();
+    const [location, setLocation] = useState<string>();
+    const [minimumSalary, setMinimumSalary] = useState<string>();
+    const [maximumSalary, setMaximumSalary] = useState<string>();
+    const [currency, setCurrency] = useState<string>();
     const [description, setDescription] = useState(
         "Write your Job Description here!"
     );
-    const [companyName, setCompanyName] = useState("");
-    const [companyWebsite, setCompanyWebsite] = useState("");
+    const [companyName, setCompanyName] = useState<string>();
+    const [companyWebsite, setCompanyWebsite] = useState<string>();
     const [visaSponsorship, setVisaSponsorship] = useState(false);
     const onChange = useCallback((value: string) => {
         setDescription(value);
     }, []);
 
-    const [file, setFile] = useState<File>();
+    const [file, setFile] = useState<string>();
+    const [fileName, setFileName] = useState<string>();
     const [applyUrl, setApplyUrl] = useState("");
     const [recruiterEmail, setRecruiterEmail] = useState("");
 
@@ -50,10 +51,21 @@ export default function Home() {
         }
     };
 
-    const handleChange = (event: any) => {
-        const fileUploaded = event.target.files[0];
-        setFile(fileUploaded);
-    };
+    // const handleChange = (event: any) => {
+    //     const fileUploaded = event.target.files[0];
+    //     setFile(fileUploaded);
+    // };
+
+    function fileUploadInputChange(e: any) {
+        let reader = new FileReader();
+        reader.onload = function (e) {
+            setFile(e.target?.result as string);
+        };
+        reader.readAsDataURL(e.target.files[0]);
+        setFileName(e.target.files[0].name);
+    }
+
+    console.log(typeof file);
 
     return (
         <>
@@ -96,7 +108,9 @@ export default function Home() {
                                 type="text"
                                 placeholder="Job Title"
                                 mb="0.5rem"
-                                onChange={(e) => setTitle(e.target.value)}
+                                onChange={(e) =>
+                                    setTitle(e.target.value as string)
+                                }
                                 value={title}
                             />
                             <Input
@@ -173,11 +187,11 @@ export default function Home() {
                                 <input
                                     type="file"
                                     accept="image/*"
-                                    onChange={handleChange}
+                                    onChange={fileUploadInputChange}
                                     ref={hiddenFileInput}
                                     style={{ display: "none" }} // Make the file input element invisible
                                 />
-                                {file && <Text>{file.name}</Text>}
+                                {fileName && <Text>{fileName}</Text>}
                             </HStack>
 
                             <SimpleMdeReact
@@ -216,13 +230,32 @@ export default function Home() {
                             <Text mb="0.5rem" fontWeight={"700"}>
                                 Preview:
                             </Text>
-                            <Box>
-                                <Text>{`${title} with ${companyName}`}</Text>
-                                <Text>{`${currency}${minimumSalary} to ${currency}${minimumSalary}`}</Text>
-                                {visaSponsorship && (
-                                    <Text>Visa Sponsorship Offered</Text>
-                                )}
-                                <Markdown>{description}</Markdown>
+                            <Box border={"1px solid grey"}>
+                                <HStack>
+                                    {file && (
+                                        <Image
+                                            src={file}
+                                            width="50px"
+                                            borderRadius={"5px"}
+                                        />
+                                    )}
+                                    <VStack>
+                                        <Text>{`${title ?? "Job Title"} with ${
+                                            companyName ?? "Company Name"
+                                        }`}</Text>
+                                        <Text>{`${currency}${
+                                            minimumSalary ?? "Minimum Salary"
+                                        } to ${currency}${
+                                            minimumSalary ?? "Maximum Salary"
+                                        }`}</Text>
+                                        {visaSponsorship && (
+                                            <Text>
+                                                Visa Sponsorship Offered
+                                            </Text>
+                                        )}
+                                        <Markdown>{description}</Markdown>
+                                    </VStack>
+                                </HStack>
                             </Box>
                         </VStack>
                     </Center>

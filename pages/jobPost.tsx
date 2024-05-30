@@ -19,19 +19,30 @@ const SimpleMdeReact = dynamic(() => import("react-simplemde-editor"), {
 import { useCallback, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
-import { AddIcon, PlusSquareIcon } from "@chakra-ui/icons";
+import { AddIcon } from "@chakra-ui/icons";
+import Markdown from "react-markdown";
+import { Image } from "@chakra-ui/next-js";
 
 export default function Home() {
     const hiddenFileInput = useRef(null);
+    const [title, setTitle] = useState("");
+    const [location, setLocation] = useState("");
+    const [minimumSalary, setMinimumSalary] = useState("");
+    const [maximumSalary, setMaximumSalary] = useState("");
+    const [currency, setCurrency] = useState("");
     const [description, setDescription] = useState(
         "Write your Job Description here!"
     );
+    const [companyName, setCompanyName] = useState("");
+    const [companyWebsite, setCompanyWebsite] = useState("");
     const [visaSponsorship, setVisaSponsorship] = useState(false);
     const onChange = useCallback((value: string) => {
         setDescription(value);
     }, []);
 
     const [file, setFile] = useState<File>();
+    const [applyUrl, setApplyUrl] = useState("");
+    const [recruiterEmail, setRecruiterEmail] = useState("");
 
     const handleClick = () => {
         if (hiddenFileInput.current) {
@@ -43,8 +54,6 @@ export default function Home() {
         const fileUploaded = event.target.files[0];
         setFile(fileUploaded);
     };
-
-    console.log(visaSponsorship);
 
     return (
         <>
@@ -87,38 +96,38 @@ export default function Home() {
                                 type="text"
                                 placeholder="Job Title"
                                 mb="0.5rem"
-                                // onChange={(e) =>
-                                //     // displayCriteriaSuggestions(e.target.value)
-                                // }
-                                // value={criteria}
+                                onChange={(e) => setTitle(e.target.value)}
+                                value={title}
                             />
                             <Input
                                 type="text"
                                 placeholder="Job Location"
                                 mb="0.5rem"
-                                // onChange={(e) =>
-                                //     // displayCriteriaSuggestions(e.target.value)
-                                // }
-                                // value={criteria}
+                                onChange={(e) => setLocation(e.target.value)}
+                                value={location}
                             />
                             <HStack width="100%" mb="0.5rem">
                                 <Input
                                     type="number"
                                     placeholder="Min Annual Salary"
-                                    // onChange={(e) =>
-                                    //     // displayCriteriaSuggestions(e.target.value)
-                                    // }
-                                    // // value={criteria}
+                                    onChange={(e) =>
+                                        setMinimumSalary(e.target.value)
+                                    }
+                                    value={minimumSalary}
                                 />
                                 <Input
                                     type="number"
                                     placeholder="Max Annual Salary"
-                                    // onChange={(e) =>
-                                    //     // displayCriteriaSuggestions(e.target.value)
-                                    // }
-                                    // // value={criteria}
+                                    onChange={(e) =>
+                                        setMaximumSalary(e.target.value)
+                                    }
+                                    value={maximumSalary}
                                 />
-                                <Select>
+                                <Select
+                                    onChange={(e) =>
+                                        setCurrency(e.target.value)
+                                    }
+                                >
                                     <option>GBP</option>
                                     <option>USD</option>
                                     <option>EUR</option>
@@ -135,11 +144,17 @@ export default function Home() {
                                 type="text"
                                 placeholder="Company Name"
                                 mb="0.5rem"
+                                onChange={(e) => setCompanyName(e.target.value)}
+                                value={companyName}
                             />
                             <Input
                                 type="text"
                                 placeholder="Company Website"
                                 mb="0.5rem"
+                                onChange={(e) =>
+                                    setCompanyWebsite(e.target.value)
+                                }
+                                value={companyWebsite}
                             />
                             <HStack>
                                 <Button
@@ -183,23 +198,32 @@ export default function Home() {
                             </Checkbox>
 
                             <Input
-                                type="text"
+                                type="url"
                                 placeholder="How to apply (Email or URL)"
                                 mb="0.5rem"
-                                // onChange={(e) =>
-                                //     // displayCriteriaSuggestions(e.target.value)
-                                // }
-                                // value={criteria}
+                                onChange={(e) => setApplyUrl(e.target.value)}
+                                value={applyUrl}
                             />
                             <Input
-                                type="text"
+                                type="email"
                                 placeholder="Your email (will be used to log in)"
                                 mb="0.5rem"
-                                // onChange={(e) =>
-                                //     // displayCriteriaSuggestions(e.target.value)
-                                // }
-                                // value={criteria}
+                                onChange={(e) =>
+                                    setRecruiterEmail(e.target.value)
+                                }
+                                value={recruiterEmail}
                             />
+                            <Text mb="0.5rem" fontWeight={"700"}>
+                                Preview:
+                            </Text>
+                            <Box>
+                                <Text>{`${title} with ${companyName}`}</Text>
+                                <Text>{`${currency}${minimumSalary} to ${currency}${minimumSalary}`}</Text>
+                                {visaSponsorship && (
+                                    <Text>Visa Sponsorship Offered</Text>
+                                )}
+                                <Markdown>{description}</Markdown>
+                            </Box>
                         </VStack>
                     </Center>
                 </Container>

@@ -9,6 +9,9 @@ export default function App({ Component, pageProps }: AppProps) {
                 200: "#9ad9d4",
                 300: "#8cbdb8",
             },
+            upfrontComp: {
+                300: "#BD8C91",
+            },
         },
     });
     return (

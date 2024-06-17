@@ -13,6 +13,8 @@ import {
     Image,
     Link,
     ListItem,
+    Radio,
+    RadioGroup,
     Stack,
     Text,
     UnorderedList,
@@ -21,6 +23,7 @@ import {
 import JobSearch from "@/components/JobSearch";
 import { useRouter } from "next/router";
 import { Abel } from "next/font/google";
+import { useState } from "react";
 const abel = Abel({
     subsets: ["latin"],
     display: "swap",
@@ -29,6 +32,7 @@ const abel = Abel({
 
 export default function Home() {
     const router = useRouter();
+    const [value, setValue] = useState("1");
     return (
         <>
             <Head>
@@ -47,185 +51,187 @@ export default function Home() {
                 />
             </Head>
             <main>
-                <Box position="relative" h="100vh" background={"transparent"}>
-                    <AbsoluteCenter
-                        background="upfront.300"
-                        width="80%"
-                        borderRadius={"5px"}
-                        color={"white"}
-                    >
-                        <Box p="1rem">
-                            <Stack
-                                direction={["column", "row"]}
-                                alignItems={"center"}
+                <Box
+                    position="relative"
+                    h="100vh"
+                    background="transparent"
+                    p={{ base: "0", md: "4rem" }}
+                >
+                    <Box p="1rem" background="upfront.300">
+                        <Stack
+                            direction={["column", "row"]}
+                            alignItems={"center"}
+                            justifyContent={"space-between"}
+                        >
+                            <Image
+                                src="/upfront/svg/logo-no-background-white.svg"
+                                width="12rem"
+                            />
+                            <Text
+                                fontSize={"2rem"}
+                                fontWeight={700}
+                                color="white"
+                                mb="1rem"
+                                className={abel.className}
                             >
-                                <Image
-                                    src="/upfront/svg/logo-no-background-white.svg"
-                                    width="12rem"
-                                    mr="2rem"
-                                />
-                            </Stack>
-                            <Divider mb="1rem" />
-                            <Center>
-                                <Text
-                                    fontSize={"2rem"}
-                                    fontWeight={700}
-                                    color="white"
-                                    mb="1rem"
-                                    className={abel.className}
-                                >
-                                    UPFRONT JOBS IS LAUNCHING SOON
-                                </Text>
-                            </Center>
+                                UPFRONT JOBS IS LAUNCHING SOON
+                            </Text>
+                        </Stack>
 
-                            <Stack
-                                direction={["column", "row"]}
-                                alignItems={"center"}
+                        <Divider mb="1rem" />
+                        <Stack
+                            direction={["column", "row"]}
+                            alignItems={"center"}
+                        >
+                            <VStack
+                                alignItems={"left"}
+                                width={{ base: "100%", md: "50%" }}
+                                minH={"100%"}
+                                m="0.5rem"
+                                className={abel.className}
                             >
-                                <VStack
-                                    alignItems={"left"}
-                                    width="50%"
-                                    minH={"100%"}
-                                    m="0.5rem"
-                                >
-                                    <Center>
-                                        <Text fontWeight={700}>
-                                            For Job Seekers
-                                        </Text>
-                                    </Center>
+                                <Center>
+                                    <Text fontWeight={700}>
+                                        For Job Seekers
+                                    </Text>
+                                </Center>
 
-                                    <Box
-                                        borderRadius={"5px"}
-                                        background={"white"}
-                                        color={"black"}
-                                        p={"1rem"}
-                                    >
-                                        <UnorderedList>
-                                            <ListItem>
-                                                <Text
-                                                    as={"span"}
-                                                    fontWeight={600}
-                                                >
-                                                    Upfront Job Posts{" "}
-                                                </Text>
-                                                - Upfront will be a platform
-                                                where job postings are carefully
-                                                curated to ensure accurate
-                                                salary ranges are listed. <br />
-                                                We're tired of companies
-                                                obscuring the salary offered for
-                                                a role until it's revealed too
-                                                late into the application
-                                                process, we believe that
-                                                companies should be Upfront
-                                                about the salary offered and
-                                                employers will be{" "}
-                                                <b>required</b> to list the
-                                                salary range in any job post on
-                                                Upfront.
-                                            </ListItem>
-                                            <ListItem>
-                                                <Text
-                                                    as={"span"}
-                                                    fontWeight={600}
-                                                >
-                                                    Developer profiles{" "}
-                                                </Text>
-                                                - you can{" "}
-                                                <b>showcase yourself</b> as a
-                                                prospective employee. <br />
-                                                Including the roles you are
-                                                looking for, the location you
-                                                desire to work in and the skills
-                                                you possess. Employers will then
-                                                be able to reach out directly to
-                                                you via Upfront.
-                                            </ListItem>
-                                        </UnorderedList>
-                                    </Box>
-                                </VStack>
-                                <VStack
-                                    alignItems={"left"}
-                                    width="50%"
-                                    minH={"100%"}
-                                    m="0.5rem"
+                                <Box
+                                    borderRadius={"5px"}
+                                    background={"white"}
+                                    color={"black"}
+                                    p={"1rem"}
                                 >
-                                    <Center>
-                                        <Text fontWeight={700}>
-                                            For Employers
-                                        </Text>
-                                    </Center>
+                                    <UnorderedList>
+                                        <ListItem>
+                                            <Text as={"span"} fontWeight={600}>
+                                                Upfront Job Posts{" "}
+                                            </Text>
+                                            - Upfront will be a platform where
+                                            job postings are carefully curated
+                                            to ensure accurate salary ranges are
+                                            listed. <br />
+                                            We're tired of companies obscuring
+                                            the salary offered for a role until
+                                            it's revealed too late into the
+                                            application process, we believe that
+                                            companies should be Upfront about
+                                            the salary offered and employers
+                                            will be <b>required</b> to list the
+                                            salary range in any job post on
+                                            Upfront.
+                                        </ListItem>
+                                        <ListItem>
+                                            <Text as={"span"} fontWeight={600}>
+                                                Developer profiles{" "}
+                                            </Text>
+                                            - you can <b>showcase yourself</b>{" "}
+                                            as a prospective employee. <br />
+                                            Including the roles you are looking
+                                            for, the location you desire to work
+                                            in and the skills you possess.
+                                            Employers will then be able to reach
+                                            out directly to you via Upfront.
+                                        </ListItem>
+                                    </UnorderedList>
+                                </Box>
+                            </VStack>
+                            <VStack
+                                alignItems={"left"}
+                                width={{ base: "100%", md: "50%" }}
+                                minH={"100%"}
+                                m="0.5rem"
+                                className={abel.className}
+                            >
+                                <Center>
+                                    <Text fontWeight={700}>For Employers</Text>
+                                </Center>
 
-                                    <Box
-                                        borderRadius={"5px"}
-                                        background={"white"}
-                                        color={"black"}
-                                        p={"1rem"}
+                                <Box
+                                    borderRadius={"5px"}
+                                    background={"white"}
+                                    color={"black"}
+                                    p={"1rem"}
+                                >
+                                    <UnorderedList>
+                                        <ListItem>
+                                            <Text as={"span"} fontWeight={600}>
+                                                Performance analytics{" "}
+                                            </Text>
+                                            - Upfront will provide dynamically
+                                            updating data-driven insights into
+                                            job post performance, this will
+                                            include clicks into the application
+                                            on our end as well as clicks through
+                                            to where they can apply on your end.
+                                        </ListItem>
+                                        <ListItem>
+                                            <Text as={"span"} fontWeight={600}>
+                                                Fair pricing{" "}
+                                            </Text>
+                                            - we promise to remain transparent
+                                            and competitive in our pricing when
+                                            compared to other job advertisement
+                                            websites.
+                                        </ListItem>
+                                        <ListItem>
+                                            <Text as={"span"} fontWeight={600}>
+                                                Listing salary ranges boost job
+                                                post performance{" "}
+                                            </Text>
+                                            -{" "}
+                                            <Link
+                                                fontWeight={700}
+                                                color={"upfront.300"}
+                                                target="_blank"
+                                                href="https://www.reed.co.uk/recruiter-advice/why-you-should-always-state-salary-in-your-job-ads"
+                                            >
+                                                Reed
+                                            </Link>{" "}
+                                            have found that job posts which
+                                            disclose salary receive 60% more
+                                            applications than those who do not.
+                                        </ListItem>
+                                        <ListItem>
+                                            As an employer, if you sign up to
+                                            our prelaunch using the form below,
+                                            we will give you 5 free month-long
+                                            job posts.
+                                        </ListItem>
+                                    </UnorderedList>
+                                </Box>
+                            </VStack>
+                        </Stack>
+                        <Divider my="1rem" />
+                        <Box className={abel.className}>
+                            <Text
+                                fontSize={"2rem"}
+                                fontWeight={700}
+                                color="white"
+                            >
+                                Sign up to be the first to know when we launch!:
+                            </Text>
+                            <Stack>
+                                <Box>
+                                    <Text color={"white"}>
+                                        Are you a job seeker or an employer?
+                                    </Text>
+                                    <RadioGroup
+                                        onChange={setValue}
+                                        value={value}
                                     >
-                                        <UnorderedList>
-                                            <ListItem>
-                                                <Text
-                                                    as={"span"}
-                                                    fontWeight={600}
-                                                >
-                                                    Performance analytics{" "}
-                                                </Text>
-                                                - Upfront will provide
-                                                dynamically updating data-driven
-                                                insights into job post
-                                                performance, this will include
-                                                clicks into the application on
-                                                our end as well as clicks
-                                                through to where they can apply
-                                                on your end.
-                                            </ListItem>
-                                            <ListItem>
-                                                <Text
-                                                    as={"span"}
-                                                    fontWeight={600}
-                                                >
-                                                    Fair pricing{" "}
-                                                </Text>
-                                                - we promise to remain
-                                                transparent and competitive in
-                                                our pricing when compared to
-                                                other job advertisement
-                                                websites.
-                                            </ListItem>
-                                            <ListItem>
-                                                <Text
-                                                    as={"span"}
-                                                    fontWeight={600}
-                                                >
-                                                    Listing salary ranges boost
-                                                    job post performance{" "}
-                                                </Text>
-                                                -{" "}
-                                                <Link
-                                                    fontWeight={700}
-                                                    color={"upfront.300"}
-                                                    target="_blank"
-                                                    href="https://www.reed.co.uk/recruiter-advice/why-you-should-always-state-salary-in-your-job-ads"
-                                                >
-                                                    Reed
-                                                </Link>{" "}
-                                                have found that job posts which
-                                                disclose salary receive 60% more
-                                                applications than those who do
-                                                not.
-                                            </ListItem>
-                                            <ListItem>
-                                                If you sign up to our prelaunch
-                                                using the form above, we will
-                                                give you 5 free month-long job
-                                                posts.
-                                            </ListItem>
-                                        </UnorderedList>
-                                    </Box>
-                                </VStack>
+                                        <Stack direction="row">
+                                            <Radio value="1">Job Seeker</Radio>
+                                            <Radio value="2">Employer</Radio>
+                                        </Stack>
+                                    </RadioGroup>
+                                </Box>
+                                <Box>
+                                    <Text>Please enter an email:</Text>
+                                </Box>
                             </Stack>
                         </Box>
-                    </AbsoluteCenter>
+                    </Box>
                 </Box>
             </main>
         </>

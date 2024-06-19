@@ -11,6 +11,7 @@ import {
     Divider,
     HStack,
     Image,
+    Input,
     Link,
     ListItem,
     Radio,
@@ -204,30 +205,69 @@ export default function Home() {
                         </Stack>
                         <Divider my="1rem" />
                         <Box className={abel.className}>
-                            <Text
-                                fontSize={"2rem"}
-                                fontWeight={700}
-                                color="white"
-                            >
-                                Sign up to be the first to know when we launch!:
+                            <Text fontSize={"2rem"} fontWeight={700} ml="1rem">
+                                Sign up to be the first to know when we launch!
                             </Text>
-                            <Stack>
+                            <Stack
+                                direction={["column", "row"]}
+                                borderRadius={"5px"}
+                                color={"white"}
+                                p={"1rem"}
+                                gap={"2rem"}
+                            >
                                 <Box>
-                                    <Text color={"white"}>
-                                        Are you a job seeker or an employer?
-                                    </Text>
-                                    <RadioGroup
-                                        onChange={setValue}
-                                        value={value}
+                                    <Stack
+                                        direction={["column", "row"]}
+                                        alignItems={"center"}
                                     >
-                                        <Stack direction="row">
-                                            <Radio value="1">Job Seeker</Radio>
-                                            <Radio value="2">Employer</Radio>
-                                        </Stack>
-                                    </RadioGroup>
+                                        <Box>
+                                            <Text fontSize="2rem">
+                                                Are you a job seeker or an
+                                                employer?
+                                            </Text>
+                                        </Box>
+                                        <Box>
+                                            <RadioGroup
+                                                onChange={setValue}
+                                                value={value}
+                                                fontSize={"2rem"}
+                                            >
+                                                <Stack direction="row">
+                                                    <Radio
+                                                        background="white"
+                                                        value="1"
+                                                    >
+                                                        Job Seeker
+                                                    </Radio>
+                                                    <Radio
+                                                        background="white"
+                                                        value="2"
+                                                    >
+                                                        Employer
+                                                    </Radio>
+                                                </Stack>
+                                            </RadioGroup>
+                                        </Box>
+                                    </Stack>
                                 </Box>
                                 <Box>
-                                    <Text>Please enter an email:</Text>
+                                    <Stack
+                                        direction={["column", "row"]}
+                                        alignItems={"center"}
+                                    >
+                                        <Box>
+                                            <Text fontSize="2rem">
+                                                Please enter an email:
+                                            </Text>
+                                        </Box>
+                                        <Box>
+                                            <Input
+                                                background="white"
+                                                type="email"
+                                                color="black"
+                                            />
+                                        </Box>
+                                    </Stack>
                                 </Box>
                             </Stack>
                         </Box>

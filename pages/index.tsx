@@ -25,6 +25,8 @@ import JobSearch from "@/components/JobSearch";
 import { useRouter } from "next/router";
 import { Abel } from "next/font/google";
 import { useState } from "react";
+import * as EmailValidator from "email-validator";
+
 const abel = Abel({
     subsets: ["latin"],
     display: "swap",
@@ -34,6 +36,30 @@ const abel = Abel({
 export default function Home() {
     const router = useRouter();
     const [value, setValue] = useState("1");
+    const [email, setEmail] = useState("");
+    const [emailError, setEmailError] = useState<string | undefined>(undefined);
+
+    const handleEmailInput = (e: string) => {
+        if (e === "") {
+            setEmailError(undefined);
+            return;
+        }
+        if (EmailValidator.validate(e)) {
+            setEmailError(undefined);
+            setEmail(e);
+            return;
+        } else {
+            if (e !== "") {
+                setEmailError("Please enter a valid email.");
+                return;
+            }
+        }
+    };
+
+    const submit = () => {
+        console.log(email);
+    };
+
     return (
         <>
             <Head>
@@ -214,6 +240,7 @@ export default function Home() {
                                 color={"white"}
                                 p={"1rem"}
                                 gap={"2rem"}
+                                alignItems={"center"}
                             >
                                 <Box>
                                     <Stack
@@ -265,9 +292,24 @@ export default function Home() {
                                                 background="white"
                                                 type="email"
                                                 color="black"
+                                                onChange={(e) =>
+                                                    handleEmailInput(
+                                                        e.target.value
+                                                    )
+                                                }
                                             />
+                                            {emailError && (
+                                                <Text color={"white"}>
+                                                    Email no good
+                                                </Text>
+                                            )}
                                         </Box>
                                     </Stack>
+                                </Box>
+                                <Box>
+                                    <Button onClick={() => submit()}>
+                                        Sign up!
+                                    </Button>
                                 </Box>
                             </Stack>
                         </Box>

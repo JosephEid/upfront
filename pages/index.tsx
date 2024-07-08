@@ -84,7 +84,7 @@ export default function Home() {
                     background="transparent"
                     p={{ base: "0", md: "4rem" }}
                 >
-                    <Box p="1rem" background="upfront.300">
+                    <Box p="1rem" background="upfront.300" borderRadius={"5px"}>
                         <Stack
                             direction={["column", "row"]}
                             alignItems={"center"}
@@ -118,7 +118,7 @@ export default function Home() {
                                 className={abel.className}
                             >
                                 <Center>
-                                    <Text fontWeight={700}>
+                                    <Text fontWeight={700} fontSize={"2rem"}>
                                         For Job Seekers
                                     </Text>
                                 </Center>
@@ -171,7 +171,9 @@ export default function Home() {
                                 className={abel.className}
                             >
                                 <Center>
-                                    <Text fontWeight={700}>For Employers</Text>
+                                    <Text fontWeight={700} fontSize={"2rem"}>
+                                        For Employers
+                                    </Text>
                                 </Center>
 
                                 <Box
@@ -230,89 +232,68 @@ export default function Home() {
                             </VStack>
                         </Stack>
                         <Divider my="1rem" />
-                        <Box className={abel.className}>
+                        <Stack
+                            direction={["column"]}
+                            alignItems={"center"}
+                            className={abel.className}
+                        >
                             <Text fontSize={"2rem"} fontWeight={700} ml="1rem">
                                 Sign up to be the first to know when we launch!
                             </Text>
                             <Stack
                                 direction={["column", "row"]}
                                 borderRadius={"5px"}
+                                borderColor={"white"}
+                                border={"1px"}
                                 color={"white"}
                                 p={"1rem"}
                                 gap={"2rem"}
-                                alignItems={"center"}
+                                alignItems={"left"}
                             >
                                 <Box>
-                                    <Stack
-                                        direction={["column", "row"]}
-                                        alignItems={"center"}
+                                    <Text fontSize="2rem">
+                                        Job Seeker or Employer?
+                                    </Text>
+                                    <RadioGroup
+                                        onChange={setValue}
+                                        value={value}
+                                        fontSize={"2rem"}
                                     >
-                                        <Box>
-                                            <Text fontSize="2rem">
-                                                Are you a job seeker or an
-                                                employer?
-                                            </Text>
-                                        </Box>
-                                        <Box>
-                                            <RadioGroup
-                                                onChange={setValue}
-                                                value={value}
-                                                fontSize={"2rem"}
-                                            >
-                                                <Stack direction="row">
-                                                    <Radio
-                                                        background="white"
-                                                        value="1"
-                                                    >
-                                                        Job Seeker
-                                                    </Radio>
-                                                    <Radio
-                                                        background="white"
-                                                        value="2"
-                                                    >
-                                                        Employer
-                                                    </Radio>
-                                                </Stack>
-                                            </RadioGroup>
-                                        </Box>
-                                    </Stack>
+                                        <Stack direction="row">
+                                            <Radio background="white" value="1">
+                                                Job Seeker
+                                            </Radio>
+                                            <Radio background="white" value="2">
+                                                Employer
+                                            </Radio>
+                                        </Stack>
+                                    </RadioGroup>
                                 </Box>
+
                                 <Box>
-                                    <Stack
-                                        direction={["column", "row"]}
-                                        alignItems={"center"}
-                                    >
-                                        <Box>
-                                            <Text fontSize="2rem">
-                                                Please enter an email:
-                                            </Text>
-                                        </Box>
-                                        <Box>
-                                            <Input
-                                                background="white"
-                                                type="email"
-                                                color="black"
-                                                onChange={(e) =>
-                                                    handleEmailInput(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                            {emailError && (
-                                                <Text color={"white"}>
-                                                    Email no good
-                                                </Text>
-                                            )}
-                                        </Box>
-                                    </Stack>
+                                    <Text fontSize="2rem">
+                                        Please enter an email:
+                                    </Text>
+                                    <Input
+                                        background="white"
+                                        type="email"
+                                        color="black"
+                                        onChange={(e) =>
+                                            handleEmailInput(e.target.value)
+                                        }
+                                        placeholder="joebloggs@mail.com"
+                                    />
+                                    {emailError && (
+                                        <Text color={"white"}>
+                                            Email no good
+                                        </Text>
+                                    )}
                                 </Box>
-                                <Box>
-                                    <Button onClick={() => submit()}>
-                                        Sign up!
-                                    </Button>
-                                </Box>
+                                <Button onClick={() => submit()} my="auto">
+                                    Sign up!
+                                </Button>
                             </Stack>
-                        </Box>
+                        </Stack>
                     </Box>
                 </Box>
             </main>

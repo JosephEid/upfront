@@ -93,6 +93,7 @@ export default function Home() {
                             <Image
                                 src="/upfront/svg/logo-no-background-white.svg"
                                 width="12rem"
+                                alt="Upfront"
                             />
                             <Text
                                 fontSize={"2rem"}
@@ -138,15 +139,15 @@ export default function Home() {
                                             job postings are carefully curated
                                             to ensure accurate salary ranges are
                                             listed. <br />
-                                            We're tired of companies obscuring
-                                            the salary offered for a role until
-                                            it's revealed too late into the
-                                            application process, we believe that
-                                            companies should be Upfront about
-                                            the salary offered and employers
-                                            will be <b>required</b> to list the
-                                            salary range in any job post on
-                                            Upfront.
+                                            We&apos;re tired of companies
+                                            obscuring the salary offered for a
+                                            role until it&apos;s revealed too
+                                            late into the application process,
+                                            we believe that companies should be
+                                            Upfront about the salary offered and
+                                            employers will be <b>required</b> to
+                                            list the salary range in any job
+                                            post on Upfront.
                                         </ListItem>
                                         <ListItem>
                                             <Text as={"span"} fontWeight={600}>

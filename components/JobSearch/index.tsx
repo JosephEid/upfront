@@ -121,6 +121,7 @@ export default function JobSearch() {
                                         width={"100%"}
                                         paddingInline={"0.5rem"}
                                         my="0.25rem"
+                                        key={x}
                                         onClick={() => {
                                             setCriteria(x);
                                             setCriteriaSuggestions([]);
@@ -159,6 +160,7 @@ export default function JobSearch() {
                                             width={"100%"}
                                             paddingInline={"0.5rem"}
                                             my="0.25rem"
+                                            key={x.city}
                                             onClick={() => {
                                                 setLocation(
                                                     `${x.city}, ${x.country}`

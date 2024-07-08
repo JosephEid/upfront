@@ -70,6 +70,7 @@ export default function Navbar() {
                     <Image
                         src="/upfront/svg/logo-no-background.svg"
                         width="6rem"
+                        alt="upfront"
                     />
 
                     <Flex

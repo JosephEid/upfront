@@ -237,6 +237,7 @@ export default function Home() {
                                             src={file}
                                             width="50px"
                                             borderRadius={"5px"}
+                                            alt="Company logo"
                                         />
                                     )}
                                     <VStack>

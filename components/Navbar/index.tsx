@@ -29,7 +29,7 @@ export default function Navbar() {
     const router = useRouter();
 
     return (
-        <Box mb="1rem">
+        <Box mb="1rem" mx={"2rem"}>
             <Flex
                 bg={useColorModeValue("white", "gray.800")}
                 color={useColorModeValue("gray.600", "white")}
@@ -69,7 +69,7 @@ export default function Navbar() {
                 >
                     <Image
                         src="/upfront/svg/logo-no-background.svg"
-                        width="6rem"
+                        width="8rem"
                         alt="upfront"
                     />
 
@@ -89,9 +89,16 @@ export default function Navbar() {
                     spacing={6}
                 >
                     <Button
+                        as="a"
+                        display={{ base: "none", md: "inline-flex" }}
+                        onClick={() => router.push("/jobPost")}
+                    >
+                        Post a job
+                    </Button>
+                    <Button
                         as={"a"}
                         display={{ base: "none", md: "inline-flex" }}
-                        fontSize={"sm"}
+                        fontSize={"1rem"}
                         fontWeight={600}
                         color={"white"}
                         bg={"upfront.300"}
@@ -126,7 +133,7 @@ const DesktopNav = (props: any) => {
                             <Link
                                 p={2}
                                 // href={navItem.href ?? "#"}
-                                fontSize={"sm"}
+                                fontSize={"1.25rem"}
                                 fontWeight={500}
                                 color={linkColor}
                                 _hover={{
@@ -220,6 +227,29 @@ const MobileNav = () => {
             {NAV_ITEMS.map((navItem) => (
                 <MobileNavItem key={navItem.label} {...navItem} />
             ))}
+            <Stack
+                flex={{ base: 1, md: 0 }}
+                justify={"flex-end"}
+                direction={"column"}
+                spacing={6}
+            >
+                <Button as="a" onClick={() => router.push("/jobPost")}>
+                    Post a job
+                </Button>
+                <Button
+                    as={"a"}
+                    fontSize={"1rem"}
+                    fontWeight={600}
+                    color={"white"}
+                    bg={"upfront.300"}
+                    href={"#"}
+                    _hover={{
+                        bg: "upfront.200",
+                    }}
+                >
+                    Sign In
+                </Button>
+            </Stack>
         </Stack>
     );
 };

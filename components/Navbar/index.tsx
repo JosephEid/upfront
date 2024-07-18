@@ -113,7 +113,7 @@ export default function Navbar() {
             </Flex>
 
             <Collapse in={isOpen} animateOpacity>
-                <MobileNav />
+                <MobileNav router={router} />
             </Collapse>
         </Box>
     );
@@ -217,7 +217,7 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
     );
 };
 
-const MobileNav = () => {
+const MobileNav = ({ router }: { router: NextRouter }) => {
     return (
         <Stack
             bg={useColorModeValue("white", "gray.800")}

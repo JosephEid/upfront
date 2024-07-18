@@ -123,7 +123,7 @@ export default function JobSearch() {
                                     form: { touched, errors }, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
                                     meta,
                                 }: any) => (
-                                    <>
+                                    <Box mb={{ base: "1rem", md: "0" }}>
                                         <InputGroup size={"lg"}>
                                             <InputLeftElement pointerEvents="none">
                                                 <Icon
@@ -141,45 +141,42 @@ export default function JobSearch() {
                                                 }
                                                 value={criteria}
                                                 borderRightRadius={{ md: "0" }}
-                                                mb={{ base: "1rem", md: "0" }}
                                             />
-                                            {criteriaSuggestions.length > 0 && (
-                                                <Box
-                                                    borderRadius={"0.375rem"}
-                                                    border={"1px solid"}
-                                                    borderColor={"#e2e8f0"}
-                                                    width={"100%"}
-                                                >
-                                                    {criteriaSuggestions.map(
-                                                        (x) => (
-                                                            <Text
-                                                                as="button"
-                                                                _hover={{
-                                                                    bg: "gray.200",
-                                                                }}
-                                                                width={"100%"}
-                                                                paddingInline={
-                                                                    "0.5rem"
-                                                                }
-                                                                my="0.25rem"
-                                                                key={x}
-                                                                onClick={() => {
-                                                                    setCriteria(
-                                                                        x
-                                                                    );
-                                                                    setCriteriaSuggestions(
-                                                                        []
-                                                                    );
-                                                                }}
-                                                            >
-                                                                {x}
-                                                            </Text>
-                                                        )
-                                                    )}
-                                                </Box>
-                                            )}
                                         </InputGroup>
-                                    </>
+                                        {criteriaSuggestions.length > 0 && (
+                                            <Box
+                                                borderRadius={"0.375rem"}
+                                                border={"1px solid"}
+                                                borderColor={"#e2e8f0"}
+                                                width={"100%"}
+                                            >
+                                                {criteriaSuggestions.map(
+                                                    (x) => (
+                                                        <Text
+                                                            as="button"
+                                                            _hover={{
+                                                                bg: "gray.200",
+                                                            }}
+                                                            width={"100%"}
+                                                            paddingInline={
+                                                                "0.5rem"
+                                                            }
+                                                            my="0.25rem"
+                                                            key={x}
+                                                            onClick={() => {
+                                                                setCriteria(x);
+                                                                setCriteriaSuggestions(
+                                                                    []
+                                                                );
+                                                            }}
+                                                        >
+                                                            {x}
+                                                        </Text>
+                                                    )
+                                                )}
+                                            </Box>
+                                        )}
+                                    </Box>
                                 )}
                             </Field>
                         </FormControl>
@@ -219,45 +216,43 @@ export default function JobSearch() {
                                                 }}
                                                 mb={{ base: "1rem", md: "0" }}
                                             />
-                                            {locationSuggestions.length > 0 && (
-                                                <Box
-                                                    borderBottomRadius={
-                                                        "0.375rem"
-                                                    }
-                                                    border={"1px solid"}
-                                                    borderColor={"#e2e8f0"}
-                                                    width={"100%"}
-                                                >
-                                                    {locationSuggestions.map(
-                                                        (x) => (
-                                                            <Text
-                                                                as="button"
-                                                                _hover={{
-                                                                    bg: "gray.200",
-                                                                }}
-                                                                width={"100%"}
-                                                                paddingInline={
-                                                                    "0.5rem"
-                                                                }
-                                                                my="0.25rem"
-                                                                key={x.city}
-                                                                onClick={() => {
-                                                                    setLocation(
-                                                                        `${x.city}, ${x.country}`
-                                                                    );
-                                                                    setLocationSuggestions(
-                                                                        []
-                                                                    );
-                                                                }}
-                                                            >
-                                                                {x.city},{" "}
-                                                                {x.country}
-                                                            </Text>
-                                                        )
-                                                    )}
-                                                </Box>
-                                            )}
                                         </InputGroup>
+                                        {locationSuggestions.length > 0 && (
+                                            <Box
+                                                borderBottomRadius={"0.375rem"}
+                                                border={"1px solid"}
+                                                borderColor={"#e2e8f0"}
+                                                width={"100%"}
+                                            >
+                                                {locationSuggestions.map(
+                                                    (x) => (
+                                                        <Text
+                                                            as="button"
+                                                            _hover={{
+                                                                bg: "gray.200",
+                                                            }}
+                                                            width={"100%"}
+                                                            paddingInline={
+                                                                "0.5rem"
+                                                            }
+                                                            my="0.25rem"
+                                                            key={x.city}
+                                                            onClick={() => {
+                                                                setLocation(
+                                                                    `${x.city}, ${x.country}`
+                                                                );
+                                                                setLocationSuggestions(
+                                                                    []
+                                                                );
+                                                            }}
+                                                        >
+                                                            {x.city},{" "}
+                                                            {x.country}
+                                                        </Text>
+                                                    )
+                                                )}
+                                            </Box>
+                                        )}
                                     </>
                                 )}
                             </Field>

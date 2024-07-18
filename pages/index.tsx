@@ -39,7 +39,7 @@ export default function Home() {
                         maxWidth={{ base: "100%", md: "70%", sm: "60%" }}
                     >
                         <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
-                            Don't waste time. Be{" "}
+                            Don&apos;t waste time. Be{" "}
                             <Text
                                 as="span"
                                 fontWeight="800"

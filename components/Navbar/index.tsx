@@ -89,7 +89,6 @@ export default function Navbar() {
                     spacing={6}
                 >
                     <Button
-                        as="a"
                         display={{ base: "none", md: "inline-flex" }}
                         onClick={() => router.push("/jobPost")}
                     >

@@ -19,9 +19,9 @@ import {
 import { useState } from "react";
 import locations from "./locations.json";
 import jobSkills from "./jobSkills.json";
-import { Field, Formik } from "formik";
 import { SearchIcon } from "@chakra-ui/icons";
 import { FaMapPin, FaSearch } from "react-icons/fa";
+import { useForm } from "react-hook-form";
 
 interface Location {
     city: string;
@@ -29,8 +29,6 @@ interface Location {
 }
 
 export default function JobSearch() {
-    const [criteria, setCriteria] = useState("");
-    const [location, setLocation] = useState("");
     const [locationSuggestions, setLocationSuggestions] = useState<Location[]>(
         []
     );
@@ -52,18 +50,7 @@ export default function JobSearch() {
         return salaryOpts;
     };
 
-    const validateOrLoad = () => {
-        if (criteria === "") {
-            console.log("error criteria");
-        }
-
-        if (criteria === "") {
-            console.log("error location");
-        }
-    };
-
     const displayLocationSuggestions = (value: string) => {
-        setLocation(value);
         value = value.toLowerCase();
         if (value.length <= 1) {
             setLocationSuggestions([]);
@@ -80,7 +67,6 @@ export default function JobSearch() {
     };
 
     const displayCriteriaSuggestions = (value: string) => {
-        setCriteria(value);
         value = value.toLowerCase();
         if (value.length <= 1) {
             setCriteriaSuggestions([]);
@@ -94,296 +80,200 @@ export default function JobSearch() {
         setCriteriaSuggestions(suggestions);
     };
 
-    return (
-        <Formik
-            initialValues={{
-                jobCriteria: "",
-                location: "",
-            }}
-            onSubmit={(values) => {
+    const {
+        handleSubmit,
+        register,
+        formState: { errors, isSubmitting },
+        setValue,
+    } = useForm();
+
+    function onSubmit(values: any) {
+        return new Promise((resolve) => {
+            setTimeout(() => {
                 alert(JSON.stringify(values, null, 2));
-            }}
-        >
-            {({ handleSubmit, errors, touched }) => (
-                <form onSubmit={handleSubmit}>
-                    <Stack
-                        direction={["column", "row"]}
-                        gap={"0"}
-                        align="flex-start"
-                        height="3rem"
-                        marginTop="2rem"
-                    >
-                        <FormControl width={{ base: "100%", md: "50%" }}>
-                            <FormLabel htmlFor="jobCriteria" display={"none"}>
-                                Job Criteria
-                            </FormLabel>
-                            <Field name="jobCriteria">
-                                {({
-                                    field, // { name, value, onChange, onBlur }
-                                    form: { touched, errors }, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
-                                    meta,
-                                }: any) => (
-                                    <Box mb={{ base: "1rem", md: "0" }}>
-                                        <InputGroup size={"lg"}>
-                                            <InputLeftElement pointerEvents="none">
-                                                <Icon
-                                                    as={FaSearch}
-                                                    color="gray.300"
-                                                />
-                                            </InputLeftElement>
-                                            <Input
-                                                type="text"
-                                                placeholder="What role are you looking for, e.g. Skills, Company?"
-                                                onChange={(e) =>
-                                                    displayCriteriaSuggestions(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                value={criteria}
-                                                borderRightRadius={{ md: "0" }}
-                                            />
-                                        </InputGroup>
-                                        {criteriaSuggestions.length > 0 && (
-                                            <Box
-                                                borderRadius={"0.375rem"}
-                                                border={"1px solid"}
-                                                borderColor={"#e2e8f0"}
-                                                width={"100%"}
-                                            >
-                                                {criteriaSuggestions.map(
-                                                    (x) => (
-                                                        <Text
-                                                            as="button"
-                                                            _hover={{
-                                                                bg: "gray.200",
-                                                            }}
-                                                            width={"100%"}
-                                                            paddingInline={
-                                                                "0.5rem"
-                                                            }
-                                                            my="0.25rem"
-                                                            key={x}
-                                                            onClick={() => {
-                                                                setCriteria(x);
-                                                                setCriteriaSuggestions(
-                                                                    []
-                                                                );
-                                                            }}
-                                                        >
-                                                            {x}
-                                                        </Text>
-                                                    )
-                                                )}
-                                            </Box>
-                                        )}
-                                    </Box>
-                                )}
-                            </Field>
-                        </FormControl>
-                        <FormControl
-                            isInvalid={!!errors.location && touched.location}
-                            width={{ base: "100%", md: "30%" }}
+                resolve(null);
+            }, 3000);
+        });
+    }
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)}>
+            <Stack
+                direction={["column", "row"]}
+                gap={"0"}
+                align="flex-start"
+                height="3rem"
+                marginTop="2rem"
+            >
+                <FormControl
+                    width={{ base: "100%", md: "50%" }}
+                    isInvalid={errors.criteria !== undefined}
+                >
+                    <FormLabel htmlFor="jobCriteria" display={"none"}>
+                        Job Criteria
+                    </FormLabel>
+
+                    <Box mb={{ base: "1rem", md: "0" }}>
+                        <InputGroup size={"lg"}>
+                            <InputLeftElement pointerEvents="none">
+                                <Icon as={FaSearch} color="gray.300" />
+                            </InputLeftElement>
+                            <Input
+                                id="criteria"
+                                {...register("criteria", {
+                                    required: "This is required",
+                                    minLength: {
+                                        value: 2,
+                                        message: "Minimum length should be 2",
+                                    },
+                                    onChange: (e) =>
+                                        displayCriteriaSuggestions(
+                                            e.target.value
+                                        ),
+                                })}
+                                type="text"
+                                placeholder="What role are you looking for, e.g. Skills, Company?"
+                                borderRightRadius={{ md: "0" }}
+                            />
+                        </InputGroup>
+                        {criteriaSuggestions.length > 0 && (
+                            <Box
+                                borderRadius={"0.375rem"}
+                                border={"1px solid"}
+                                borderColor={"#e2e8f0"}
+                                width={"100%"}
+                            >
+                                {criteriaSuggestions.map((x) => (
+                                    <Text
+                                        as="button"
+                                        _hover={{
+                                            bg: "gray.200",
+                                        }}
+                                        width={"100%"}
+                                        paddingInline={"0.5rem"}
+                                        my="0.25rem"
+                                        key={x}
+                                        onClick={() => {
+                                            setValue("criteria", x);
+                                            setCriteriaSuggestions([]);
+                                        }}
+                                    >
+                                        {x}
+                                    </Text>
+                                ))}
+                            </Box>
+                        )}
+                    </Box>
+                    <FormErrorMessage>
+                        {errors.criteria?.message?.toString()}
+                    </FormErrorMessage>
+                </FormControl>
+                <FormControl
+                    width={{ base: "100%", md: "30%" }}
+                    isInvalid={errors.location !== undefined}
+                >
+                    <FormLabel htmlFor="location" display="none">
+                        Location
+                    </FormLabel>
+                    <InputGroup size={"lg"}>
+                        <InputLeftElement pointerEvents="none">
+                            <Icon as={FaMapPin} color="gray.300" />
+                        </InputLeftElement>
+                        <Input
+                            type="text"
+                            placeholder="Location"
+                            id="location"
+                            {...register("location", {
+                                required: "This is required",
+                                minLength: {
+                                    value: 2,
+                                    message: "Minimum length should be 2",
+                                },
+                                onChange: (e) => {
+                                    displayLocationSuggestions(e.target.value);
+                                },
+                            })}
+                            borderRadius={{
+                                base: "0.375rem",
+                                md: "0",
+                            }}
+                            mb={{ base: "1rem", md: "0" }}
+                        />
+                    </InputGroup>
+                    {locationSuggestions.length > 0 && (
+                        <Box
+                            borderBottomRadius={"0.375rem"}
+                            border={"1px solid"}
+                            borderColor={"#e2e8f0"}
+                            width={"100%"}
                         >
-                            <FormLabel htmlFor="location" display="none">
-                                Location
-                            </FormLabel>
-                            <Field name="location">
-                                {({
-                                    field, // { name, value, onChange, onBlur }
-                                    form: { touched, errors }, // also values, setXXXX, handleXXXX, dirty, isValid, status, etc.
-                                    meta,
-                                }: any) => (
-                                    <>
-                                        <InputGroup size={"lg"}>
-                                            <InputLeftElement pointerEvents="none">
-                                                <Icon
-                                                    as={FaMapPin}
-                                                    color="gray.300"
-                                                />
-                                            </InputLeftElement>
-                                            <Input
-                                                type="text"
-                                                placeholder="Location"
-                                                onChange={(e) =>
-                                                    displayLocationSuggestions(
-                                                        e.target.value
-                                                    )
-                                                }
-                                                value={location}
-                                                borderRadius={{
-                                                    base: "0.375rem",
-                                                    md: "0",
-                                                }}
-                                                mb={{ base: "1rem", md: "0" }}
-                                            />
-                                        </InputGroup>
-                                        {locationSuggestions.length > 0 && (
-                                            <Box
-                                                borderBottomRadius={"0.375rem"}
-                                                border={"1px solid"}
-                                                borderColor={"#e2e8f0"}
-                                                width={"100%"}
-                                            >
-                                                {locationSuggestions.map(
-                                                    (x) => (
-                                                        <Text
-                                                            as="button"
-                                                            _hover={{
-                                                                bg: "gray.200",
-                                                            }}
-                                                            width={"100%"}
-                                                            paddingInline={
-                                                                "0.5rem"
-                                                            }
-                                                            my="0.25rem"
-                                                            key={x.city}
-                                                            onClick={() => {
-                                                                setLocation(
-                                                                    `${x.city}, ${x.country}`
-                                                                );
-                                                                setLocationSuggestions(
-                                                                    []
-                                                                );
-                                                            }}
-                                                        >
-                                                            {x.city},{" "}
-                                                            {x.country}
-                                                        </Text>
-                                                    )
-                                                )}
-                                            </Box>
-                                        )}
-                                    </>
-                                )}
-                            </Field>
-                            <FormErrorMessage>
-                                {errors.location}
-                            </FormErrorMessage>
-                        </FormControl>
-                        <Button
-                            type="submit"
-                            backgroundColor="upfront.300"
-                            color="white"
-                            width={{ base: "100%", md: "20%" }}
-                            borderLeftRadius={{ md: "0" }}
-                            size={"lg"}
-                            lineHeight={"3.5rem"}
-                            fontSize={{ base: "1rem", md: "1.5rem" }}
+                            {locationSuggestions.map((x) => (
+                                <Text
+                                    as="button"
+                                    _hover={{
+                                        bg: "gray.200",
+                                    }}
+                                    width={"100%"}
+                                    paddingInline={"0.5rem"}
+                                    my="0.25rem"
+                                    key={x.city}
+                                    onClick={() => {
+                                        setValue(
+                                            "location",
+                                            `${x.city}, ${x.country}`
+                                        );
+                                        setLocationSuggestions([]);
+                                    }}
+                                >
+                                    {x.city}, {x.country}
+                                </Text>
+                            ))}
+                        </Box>
+                    )}
+                    <FormErrorMessage>
+                        {errors.location?.message?.toString()}
+                    </FormErrorMessage>
+                </FormControl>
+                <FormControl
+                    isInvalid={errors.salary !== undefined}
+                    width={{ base: "100%", md: "30%" }}
+                >
+                    <FormLabel htmlFor="salary" display="none">
+                        Salary
+                    </FormLabel>
+                    <InputGroup size={"lg"}>
+                        <Select
+                            id="salary"
+                            borderRadius={{
+                                base: "0.375rem",
+                                md: "0",
+                            }}
+                            {...register("salary", {
+                                required: "This is required",
+                            })}
+                            mb={{ base: "1rem", md: "0" }}
                         >
-                            Find Jobs
-                        </Button>
-                    </Stack>
-                </form>
-            )}
-        </Formik>
-
-        // <Box>
-        //     <Text fontWeight="700" mb="1rem">
-        //         Job Search:
-        //     </Text>
-        //     <FormControl>
-        //         <Stack
-        //             direction={["column", "row"]}
-        //             justifyContent={"space-between"}
-        //         >
-        //             <Box width="100%">
-        //                 <Input
-        //                     type="text"
-        //                     placeholder="Skills, Company"
-        //                     onChange={(e) =>
-        //                         displayCriteriaSuggestions(e.target.value)
-        //                     }
-        //                     value={criteria}
-        //                 />
-        //                 {criteriaSuggestions.length > 0 && (
-        //                     <Box
-        //                         borderRadius={"0.375rem"}
-        //                         border={"1px solid"}
-        //                         borderColor={"#e2e8f0"}
-        //                         width={"100%"}
-        //                     >
-        //                         {criteriaSuggestions.map((x) => (
-        //                             <Text
-        //                                 as="button"
-        //                                 _hover={{
-        //                                     bg: "gray.200",
-        //                                 }}
-        //                                 width={"100%"}
-        //                                 paddingInline={"0.5rem"}
-        //                                 my="0.25rem"
-        //                                 key={x}
-        //                                 onClick={() => {
-        //                                     setCriteria(x);
-        //                                     setCriteriaSuggestions([]);
-        //                                 }}
-        //                             >
-        //                                 {x}
-        //                             </Text>
-        //                         ))}
-        //                     </Box>
-        //                 )}
-        //             </Box>
-
-        //             <Box width="100%">
-        //                 <VStack gap="0.25rem">
-        // <Input
-        //     type="text"
-        //     placeholder="City, Country"
-        //     onChange={(e) =>
-        //         displayLocationSuggestions(e.target.value)
-        //     }
-        //     value={location}
-        // />
-        // {locationSuggestions.length > 0 && (
-        //     <Box
-        //         borderRadius={"0.375rem"}
-        //         border={"1px solid"}
-        //         borderColor={"#e2e8f0"}
-        //         width={"100%"}
-        //     >
-        //         {locationSuggestions.map((x) => (
-        //             <Text
-        //                 as="button"
-        //                 _hover={{
-        //                     bg: "gray.200",
-        //                 }}
-        //                 width={"100%"}
-        //                 paddingInline={"0.5rem"}
-        //                 my="0.25rem"
-        //                 key={x.city}
-        //                 onClick={() => {
-        //                     setLocation(
-        //                         `${x.city}, ${x.country}`
-        //                     );
-        //                     setLocationSuggestions([]);
-        //                 }}
-        //             >
-        //                 {x.city}, {x.country}
-        //             </Text>
-        //         ))}
-        //     </Box>
-        // )}
-        //                 </VStack>
-        //             </Box>
-
-        //             <Box width="100%">
-        //                 <Select>{getSalaries()}</Select>
-        //             </Box>
-        //             <Box>
-        //                 <Button
-        //                     onClick={() => validateOrLoad()}
-        //                     bg={"upfront.300"}
-        //                     _hover={{
-        //                         bg: "upfront.200",
-        //                     }}
-        //                     minWidth={"4rem"}
-        //                     width={"100%"}
-        //                 >
-        //                     Submit
-        //                 </Button>
-        //             </Box>
-        //         </Stack>
-        //     </FormControl>
-        // </Box>
+                            {getSalaries()}
+                        </Select>
+                    </InputGroup>
+                    <FormErrorMessage>
+                        {errors.salary?.message?.toString()}
+                    </FormErrorMessage>
+                </FormControl>
+                <Button
+                    type="submit"
+                    backgroundColor="upfront.300"
+                    color="white"
+                    width={{ base: "100%", md: "20%" }}
+                    borderLeftRadius={{ md: "0" }}
+                    size={"lg"}
+                    lineHeight={"3.5rem"}
+                    fontSize={{ base: "1rem", md: "1.5rem" }}
+                    isLoading={isSubmitting}
+                >
+                    Find Jobs
+                </Button>
+            </Stack>
+        </form>
     );
 }

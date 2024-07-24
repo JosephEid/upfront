@@ -4,6 +4,7 @@ import { Container, HStack, Text } from "@chakra-ui/react";
 import JobSearch from "@/components/JobSearch";
 import { useRouter } from "next/router";
 import { Abel } from "next/font/google";
+import Layout from "@/components/Layout";
 
 const abel = Abel({
     subsets: ["latin"],
@@ -29,47 +30,25 @@ export default function Home() {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <main>
-                <Container
-                    maxWidth={{ base: "100%" }}
-                    className={abel.className}
-                >
-                    <Navbar />
-                    <Container
-                        maxWidth={{ base: "100%", md: "70%", sm: "60%" }}
-                    >
-                        <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
-                            Don&apos;t waste time. Be{" "}
-                            <Text
-                                as="span"
-                                fontWeight="800"
-                                color={"upfront.300"}
-                            >
-                                Upfront.
-                            </Text>
-                        </Text>
-                        <Text fontWeight={700} fontSize={"2rem"} mb="1rem">
-                            Where{" "}
-                            <Text
-                                as="span"
-                                fontWeight="800"
-                                color={"upfront.300"}
-                            >
-                                salaries
-                            </Text>{" "}
-                            are always{" "}
-                            <Text
-                                as="span"
-                                fontWeight="800"
-                                color={"upfront.300"}
-                            >
-                                provided.
-                            </Text>
-                        </Text>
-                        <JobSearch />
-                    </Container>
-                </Container>
-            </main>
+            <Layout>
+                <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
+                    Don&apos;t waste time. Be{" "}
+                    <Text as="span" fontWeight="800" color={"upfront.300"}>
+                        Upfront.
+                    </Text>
+                </Text>
+                <Text fontWeight={700} fontSize={"2rem"} mb="1rem">
+                    Where{" "}
+                    <Text as="span" fontWeight="800" color={"upfront.300"}>
+                        salaries
+                    </Text>{" "}
+                    are always{" "}
+                    <Text as="span" fontWeight="800" color={"upfront.300"}>
+                        provided.
+                    </Text>
+                </Text>
+                <JobSearch />
+            </Layout>
         </>
     );
 }

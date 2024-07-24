@@ -22,6 +22,7 @@ import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import { AddIcon } from "@chakra-ui/icons";
 import Markdown from "react-markdown";
+import Layout from "@/components/Layout";
 
 export default function Home() {
     const hiddenFileInput = useRef(null);
@@ -65,8 +66,6 @@ export default function Home() {
         setFileName(e.target.files[0].name);
     }
 
-    console.log(typeof file);
-
     return (
         <>
             <Head>
@@ -84,184 +83,169 @@ export default function Home() {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <main>
-                <Container
-                    maxWidth={{ base: "100%", md: "70%", lg: "60%" }}
-                    mb="1rem"
-                >
-                    <Navbar />
-                    <Text mb="1rem">Post a Job</Text>
-                    <Text fontWeight={"700"} mb="1rem">
-                        We require that companies are Upfront about their
-                        salaries. All job postings must contain a salary range.
-                    </Text>
-                    <Center>
-                        <VStack width="80%" alignItems={"start"} mb="1rem">
-                            <Text
-                                fontWeight={"700"}
-                                fontSize={"2rem"}
-                                mb="0.5rem"
+            <Layout>
+                <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
+                    Create a Job Post.
+                </Text>
+                <Text fontWeight={700} fontSize={"2rem"} mb="1rem">
+                    We require that companies are{" "}
+                    <Text as="span" fontWeight="800" color={"upfront.300"}>
+                        Upfront
+                    </Text>{" "}
+                    about their salaries.
+                </Text>
+                <Text fontWeight={700} fontSize={"2rem"} mb="1rem">
+                    All job postings must contain a salary range.
+                </Text>
+                <Center>
+                    <VStack width="80%" alignItems={"start"} mb="1rem">
+                        <Input
+                            type="text"
+                            placeholder="Job Title"
+                            mb="0.5rem"
+                            onChange={(e) => setTitle(e.target.value as string)}
+                            value={title}
+                        />
+                        <Input
+                            type="text"
+                            placeholder="Job Location"
+                            mb="0.5rem"
+                            onChange={(e) => setLocation(e.target.value)}
+                            value={location}
+                        />
+                        <HStack width="100%" mb="0.5rem">
+                            <Input
+                                type="number"
+                                placeholder="Min Annual Salary"
+                                onChange={(e) =>
+                                    setMinimumSalary(e.target.value)
+                                }
+                                value={minimumSalary}
+                            />
+                            <Input
+                                type="number"
+                                placeholder="Max Annual Salary"
+                                onChange={(e) =>
+                                    setMaximumSalary(e.target.value)
+                                }
+                                value={maximumSalary}
+                            />
+                            <Select
+                                onChange={(e) => setCurrency(e.target.value)}
                             >
-                                Create a Job Post:
-                            </Text>
-                            <Input
-                                type="text"
-                                placeholder="Job Title"
-                                mb="0.5rem"
-                                onChange={(e) =>
-                                    setTitle(e.target.value as string)
-                                }
-                                value={title}
-                            />
-                            <Input
-                                type="text"
-                                placeholder="Job Location"
-                                mb="0.5rem"
-                                onChange={(e) => setLocation(e.target.value)}
-                                value={location}
-                            />
-                            <HStack width="100%" mb="0.5rem">
-                                <Input
-                                    type="number"
-                                    placeholder="Min Annual Salary"
-                                    onChange={(e) =>
-                                        setMinimumSalary(e.target.value)
-                                    }
-                                    value={minimumSalary}
-                                />
-                                <Input
-                                    type="number"
-                                    placeholder="Max Annual Salary"
-                                    onChange={(e) =>
-                                        setMaximumSalary(e.target.value)
-                                    }
-                                    value={maximumSalary}
-                                />
-                                <Select
-                                    onChange={(e) =>
-                                        setCurrency(e.target.value)
-                                    }
-                                >
-                                    <option>GBP</option>
-                                    <option>USD</option>
-                                    <option>EUR</option>
-                                    <option>AUD</option>
-                                    <option>CAD</option>
-                                    <option>SGD</option>
-                                    <option>CHF</option>
-                                    <option>INR</option>
-                                    <option>JPY</option>
-                                </Select>
-                                <Text>a year</Text>
-                            </HStack>
-                            <Input
-                                type="text"
-                                placeholder="Company Name"
-                                mb="0.5rem"
-                                onChange={(e) => setCompanyName(e.target.value)}
-                                value={companyName}
-                            />
-                            <Input
-                                type="text"
-                                placeholder="Company Website"
-                                mb="0.5rem"
-                                onChange={(e) =>
-                                    setCompanyWebsite(e.target.value)
-                                }
-                                value={companyWebsite}
-                            />
-                            <HStack>
-                                <Button
-                                    className="button-upload"
-                                    onClick={handleClick}
-                                    bg={"upfront.300"}
-                                    _hover={{
-                                        bg: "upfront.200",
-                                    }}
-                                    color="white"
-                                    mb="0.5rem"
-                                >
-                                    <AddIcon mr="0.5rem" />
-                                    Upload Company Logo
-                                </Button>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={fileUploadInputChange}
-                                    ref={hiddenFileInput}
-                                    style={{ display: "none" }} // Make the file input element invisible
-                                />
-                                {fileName && <Text>{fileName}</Text>}
-                            </HStack>
-
-                            <SimpleMdeReact
-                                style={{
-                                    width: "100%",
+                                <option>GBP</option>
+                                <option>USD</option>
+                                <option>EUR</option>
+                                <option>AUD</option>
+                                <option>CAD</option>
+                                <option>SGD</option>
+                                <option>CHF</option>
+                                <option>INR</option>
+                                <option>JPY</option>
+                            </Select>
+                            <Text>a year</Text>
+                        </HStack>
+                        <Input
+                            type="text"
+                            placeholder="Company Name"
+                            mb="0.5rem"
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            value={companyName}
+                        />
+                        <Input
+                            type="text"
+                            placeholder="Company Website"
+                            mb="0.5rem"
+                            onChange={(e) => setCompanyWebsite(e.target.value)}
+                            value={companyWebsite}
+                        />
+                        <HStack>
+                            <Button
+                                className="button-upload"
+                                onClick={handleClick}
+                                bg={"upfront.300"}
+                                _hover={{
+                                    bg: "upfront.200",
                                 }}
-                                value={description}
-                                onChange={onChange}
-                            />
-
-                            <Checkbox
+                                color="white"
                                 mb="0.5rem"
-                                onChange={() =>
-                                    setVisaSponsorship(!visaSponsorship)
-                                }
                             >
-                                VISA Sponsorship offered?
-                            </Checkbox>
+                                <AddIcon mr="0.5rem" />
+                                Upload Company Logo
+                            </Button>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={fileUploadInputChange}
+                                ref={hiddenFileInput}
+                                style={{ display: "none" }} // Make the file input element invisible
+                            />
+                            {fileName && <Text>{fileName}</Text>}
+                        </HStack>
 
-                            <Input
-                                type="url"
-                                placeholder="How to apply (Email or URL)"
-                                mb="0.5rem"
-                                onChange={(e) => setApplyUrl(e.target.value)}
-                                value={applyUrl}
-                            />
-                            <Input
-                                type="email"
-                                placeholder="Your email (will be used to log in)"
-                                mb="0.5rem"
-                                onChange={(e) =>
-                                    setRecruiterEmail(e.target.value)
-                                }
-                                value={recruiterEmail}
-                            />
-                            <Text mb="0.5rem" fontWeight={"700"}>
-                                Preview:
-                            </Text>
-                            <Box border={"1px solid grey"}>
-                                <HStack>
-                                    {file && (
-                                        <Image
-                                            src={file}
-                                            width="50px"
-                                            borderRadius={"5px"}
-                                            alt="Company logo"
-                                        />
+                        <SimpleMdeReact
+                            style={{
+                                width: "100%",
+                            }}
+                            value={description}
+                            onChange={onChange}
+                        />
+
+                        <Checkbox
+                            mb="0.5rem"
+                            onChange={() =>
+                                setVisaSponsorship(!visaSponsorship)
+                            }
+                        >
+                            VISA Sponsorship offered?
+                        </Checkbox>
+
+                        <Input
+                            type="url"
+                            placeholder="How to apply (Email or URL)"
+                            mb="0.5rem"
+                            onChange={(e) => setApplyUrl(e.target.value)}
+                            value={applyUrl}
+                        />
+                        <Input
+                            type="email"
+                            placeholder="Your email (will be used to log in)"
+                            mb="0.5rem"
+                            onChange={(e) => setRecruiterEmail(e.target.value)}
+                            value={recruiterEmail}
+                        />
+                        <Text mb="0.5rem" fontWeight={"700"}>
+                            Preview:
+                        </Text>
+                        <Box border={"1px solid grey"}>
+                            <HStack>
+                                {file && (
+                                    <Image
+                                        src={file}
+                                        width="50px"
+                                        borderRadius={"5px"}
+                                        alt="Company logo"
+                                    />
+                                )}
+                                <VStack>
+                                    <Text>{`${title ?? "Job Title"} with ${
+                                        companyName ?? "Company Name"
+                                    }`}</Text>
+                                    <Text>{`${currency}${
+                                        minimumSalary ?? "Minimum Salary"
+                                    } to ${currency}${
+                                        minimumSalary ?? "Maximum Salary"
+                                    }`}</Text>
+                                    {visaSponsorship && (
+                                        <Text>Visa Sponsorship Offered</Text>
                                     )}
-                                    <VStack>
-                                        <Text>{`${title ?? "Job Title"} with ${
-                                            companyName ?? "Company Name"
-                                        }`}</Text>
-                                        <Text>{`${currency}${
-                                            minimumSalary ?? "Minimum Salary"
-                                        } to ${currency}${
-                                            minimumSalary ?? "Maximum Salary"
-                                        }`}</Text>
-                                        {visaSponsorship && (
-                                            <Text>
-                                                Visa Sponsorship Offered
-                                            </Text>
-                                        )}
-                                        <Markdown>{description}</Markdown>
-                                    </VStack>
-                                </HStack>
-                            </Box>
-                        </VStack>
-                    </Center>
-                </Container>
-            </main>
+                                    <Markdown>{description}</Markdown>
+                                </VStack>
+                            </HStack>
+                        </Box>
+                    </VStack>
+                </Center>
+            </Layout>
         </>
     );
 }

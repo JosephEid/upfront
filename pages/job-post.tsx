@@ -536,6 +536,19 @@ function getCurrencySymbol(currency: Currency): string {
     return currencySymbols[currency];
 }
 
+function formatNumberWithCommas(number: string): string {
+    // Convert input to a number
+    const num = parseFloat(number);
+
+    // Ensure the number is valid
+    if (isNaN(num)) {
+        throw new Error("Invalid number input.");
+    }
+
+    // Format number with commas
+    return new Intl.NumberFormat("en-US").format(num);
+}
+
 interface JobPostProps {
     companyLogo: string;
     companyName: string;
@@ -632,9 +645,13 @@ const JobPost = ({
                         </Text>
                         <Text fontSize={{ base: "1rem", md: "1.5rem" }}>
                             {`${currencySymbol}${
-                                minSalary === "" ? 0 : minSalary
+                                minSalary === ""
+                                    ? 0
+                                    : formatNumberWithCommas(minSalary)
                             } to ${currencySymbol}${
-                                maxSalary === "" ? 0 : maxSalary
+                                maxSalary === ""
+                                    ? 0
+                                    : formatNumberWithCommas(maxSalary)
                             }`}{" "}
                             per annum
                         </Text>

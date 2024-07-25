@@ -1,12 +1,9 @@
 import {
     Box,
     Button,
-    Checkbox,
-    Flex,
     FormControl,
     FormErrorMessage,
     FormLabel,
-    HStack,
     Icon,
     Input,
     InputGroup,
@@ -14,12 +11,10 @@ import {
     Select,
     Stack,
     Text,
-    VStack,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import locations from "./locations.json";
 import jobSkills from "./jobSkills.json";
-import { SearchIcon } from "@chakra-ui/icons";
 import { FaMapPin, FaSearch } from "react-icons/fa";
 import { useForm } from "react-hook-form";
 
@@ -102,7 +97,6 @@ export default function JobSearch() {
                 direction={["column", "row"]}
                 gap={"0"}
                 align="flex-start"
-                height="3rem"
                 marginTop="2rem"
             >
                 <FormControl
@@ -113,57 +107,53 @@ export default function JobSearch() {
                         Job Criteria
                     </FormLabel>
 
-                    <Box mb={{ base: "1rem", md: "0" }}>
-                        <InputGroup size={"lg"}>
-                            <InputLeftElement pointerEvents="none">
-                                <Icon as={FaSearch} color="gray.300" />
-                            </InputLeftElement>
-                            <Input
-                                id="criteria"
-                                {...register("criteria", {
-                                    required: "This is required",
-                                    minLength: {
-                                        value: 2,
-                                        message: "Minimum length should be 2",
-                                    },
-                                    onChange: (e) =>
-                                        displayCriteriaSuggestions(
-                                            e.target.value
-                                        ),
-                                })}
-                                type="text"
-                                placeholder="What role are you looking for, e.g. Skills, Company?"
-                                borderRightRadius={{ md: "0" }}
-                            />
-                        </InputGroup>
-                        {criteriaSuggestions.length > 0 && (
-                            <Box
-                                borderRadius={"0.375rem"}
-                                border={"1px solid"}
-                                borderColor={"#e2e8f0"}
-                                width={"100%"}
-                            >
-                                {criteriaSuggestions.map((x) => (
-                                    <Text
-                                        as="button"
-                                        _hover={{
-                                            bg: "gray.200",
-                                        }}
-                                        width={"100%"}
-                                        paddingInline={"0.5rem"}
-                                        my="0.25rem"
-                                        key={x}
-                                        onClick={() => {
-                                            setValue("criteria", x);
-                                            setCriteriaSuggestions([]);
-                                        }}
-                                    >
-                                        {x}
-                                    </Text>
-                                ))}
-                            </Box>
-                        )}
-                    </Box>
+                    <InputGroup size={"lg"}>
+                        <InputLeftElement pointerEvents="none">
+                            <Icon as={FaSearch} color="gray.300" />
+                        </InputLeftElement>
+                        <Input
+                            id="criteria"
+                            {...register("criteria", {
+                                required: "This is required",
+                                minLength: {
+                                    value: 2,
+                                    message: "Minimum length should be 2",
+                                },
+                                onChange: (e) =>
+                                    displayCriteriaSuggestions(e.target.value),
+                            })}
+                            type="text"
+                            placeholder="What role are you looking for, e.g. Skills, Company?"
+                            borderRightRadius={{ md: "0" }}
+                        />
+                    </InputGroup>
+                    {criteriaSuggestions.length > 0 && (
+                        <Box
+                            borderRadius={"0.375rem"}
+                            border={"1px solid"}
+                            borderColor={"#e2e8f0"}
+                            width={"100%"}
+                        >
+                            {criteriaSuggestions.map((x) => (
+                                <Text
+                                    as="button"
+                                    _hover={{
+                                        bg: "gray.200",
+                                    }}
+                                    width={"100%"}
+                                    paddingInline={"0.5rem"}
+                                    my="0.25rem"
+                                    key={x}
+                                    onClick={() => {
+                                        setValue("criteria", x);
+                                        setCriteriaSuggestions([]);
+                                    }}
+                                >
+                                    {x}
+                                </Text>
+                            ))}
+                        </Box>
+                    )}
                     <FormErrorMessage>
                         {errors.criteria?.message?.toString()}
                     </FormErrorMessage>

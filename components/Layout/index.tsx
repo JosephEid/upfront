@@ -14,7 +14,10 @@ const Layout = ({ children }: { children: ReactNode }) => {
         <main>
             <Container maxWidth={{ base: "100%" }} className={abel.className}>
                 <Navbar />
-                <Container maxWidth={{ base: "100%", md: "70%", sm: "60%" }}>
+                <Container
+                    maxWidth={{ base: "100%", md: "70%", sm: "60%" }}
+                    height={"auto"}
+                >
                     {children}
                 </Container>
             </Container>

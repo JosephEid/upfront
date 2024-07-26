@@ -12,11 +12,15 @@ const abel = Abel({
 const Layout = ({ children }: { children: ReactNode }) => {
     return (
         <main>
-            <Container maxWidth={{ base: "100%" }} className={abel.className}>
+            <Container
+                maxWidth={{ base: "100%" }}
+                className={`${abel.className} layout`}
+                minHeight={"100%"}
+            >
                 <Navbar />
                 <Container
                     maxWidth={{ base: "100%", md: "70%", sm: "60%" }}
-                    height={"auto"}
+                    px={{ base: 0, md: "1rem" }}
                 >
                     {children}
                 </Container>

@@ -2,6 +2,7 @@ import Head from "next/head";
 import Navbar from "../components/Navbar";
 import {
     Box,
+    BoxProps,
     Button,
     Center,
     Checkbox,
@@ -30,6 +31,8 @@ import { AddIcon } from "@chakra-ui/icons";
 import Markdown from "react-markdown";
 import Layout from "@/components/Layout";
 import { useForm } from "react-hook-form";
+import getStripe from "@/utils/get-stripe";
+import { fetchPostJSON } from "@/utils/api-helpers";
 
 export default function Home() {
     const hiddenFileInput = useRef(null);
@@ -37,6 +40,7 @@ export default function Home() {
         setValue("description", value);
     }, []);
 
+    const [duration, setDuration] = useState<number>(1);
     const [fileName, setFileName] = useState<string>();
 
     const handleClick = () => {
@@ -70,7 +74,6 @@ export default function Home() {
     };
 
     const {
-        handleSubmit,
         register,
         formState: { errors, isSubmitting },
         setValue,
@@ -78,13 +81,31 @@ export default function Home() {
         getValues,
     } = useForm({ defaultValues: defaultValues });
 
-    function onSubmit(values: any) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                alert(JSON.stringify(values, null, 2));
-                resolve(null);
-            }, 3000);
+    async function onSubmit(productName: string, amount: number) {
+        console.log(getValues());
+        // Create a Checkout Session.
+        const response = await fetchPostJSON("/api/checkout_sessions", {
+            amount,
+            productName,
         });
+
+        if (response.statusCode === 500) {
+            console.error(response.message);
+            return;
+        }
+
+        // Redirect to Checkout.
+        const stripe = await getStripe();
+        const { error } = await stripe!.redirectToCheckout({
+            // Make the id field from the Checkout Session creation API response
+            // available to this file, so you can provide it as parameter here
+            // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
+            sessionId: response.id,
+        });
+        // If `redirectToCheckout` fails due to a browser or network
+        // error, display the localized error message to your customer
+        // using `error.message`.
+        console.warn(error.message);
     }
 
     const formValues = watch() as JobPostProps;
@@ -123,391 +144,470 @@ export default function Home() {
                 <Center>
                     <JobPost {...formValues} />
                 </Center>
-                <Box mb="1rem">
-                    <form onSubmit={handleSubmit(onSubmit)}>
+                <Box my="1rem">
+                    <form>
                         <Stack
-                            direction={["column"]}
-                            gap={"0"}
-                            align="flex-start"
-                            height="3rem"
-                            marginTop="2rem"
+                            direction={["column", "row"]}
+                            width={"100%"}
+                            gap={{ base: 0, md: "0.5rem" }}
                         >
-                            <Stack
-                                direction={["column", "row"]}
-                                width={"100%"}
-                                gap={{ base: 0, md: "0.5rem" }}
-                            >
-                                <FormControl
-                                    width={{ base: "100%", md: "60%" }}
-                                    isInvalid={errors.title !== undefined}
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel htmlFor="title" display={"none"}>
-                                        Job Title
-                                    </FormLabel>
-                                    <Input
-                                        size={"lg"}
-                                        id="title"
-                                        {...register("title", {
-                                            required: "This is required",
-                                            minLength: {
-                                                value: 2,
-                                                message:
-                                                    "Minimum length should be 2",
-                                            },
-                                            maxLength: {
-                                                value: 45,
-                                                message:
-                                                    "Maximum length is 50 characters",
-                                            },
-                                        })}
-                                        maxLength={45}
-                                        type="text"
-                                        placeholder="Job Title"
-                                    />
-                                    <FormErrorMessage>
-                                        {errors.title?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                                <FormControl
-                                    width={{ base: "100%", md: "40%" }}
-                                    isInvalid={errors.location !== undefined}
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel
-                                        htmlFor="location"
-                                        display={"none"}
-                                    >
-                                        Job Location
-                                    </FormLabel>
-                                    <Input
-                                        size={"lg"}
-                                        id="location"
-                                        {...register("location", {
-                                            required: "This is required",
-                                            minLength: {
-                                                value: 2,
-                                                message:
-                                                    "Minimum length should be 2",
-                                            },
-                                            maxLength: {
-                                                value: 40,
-                                                message:
-                                                    "Maximum length is 40 characters",
-                                            },
-                                        })}
-                                        type="text"
-                                        maxLength={40}
-                                        placeholder="Job Location"
-                                    />
-                                    <FormErrorMessage>
-                                        {errors.location?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                            </Stack>
-                            <Stack
-                                direction={["column", "row"]}
-                                width={"100%"}
-                                gap={{ base: 0, md: "0.5rem" }}
-                            >
-                                <FormControl
-                                    width={{ base: "100%", md: "45%" }}
-                                    isInvalid={errors.minSalary !== undefined}
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel
-                                        htmlFor="minSalary"
-                                        display={"none"}
-                                    >
-                                        Minimum Salary
-                                    </FormLabel>
-                                    <Input
-                                        size={"lg"}
-                                        type="number"
-                                        placeholder="Min Annual Salary"
-                                        id="minSalary"
-                                        {...register("minSalary", {
-                                            required: "This is required",
-                                        })}
-                                    />
-                                    <FormErrorMessage>
-                                        {errors.minSalary?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                                <FormControl
-                                    width={{ base: "100%", md: "45%" }}
-                                    isInvalid={errors.maxSalary !== undefined}
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel
-                                        htmlFor="maxSalary"
-                                        display={"none"}
-                                    >
-                                        Maximum Salary
-                                    </FormLabel>
-                                    <Input
-                                        size={"lg"}
-                                        type="number"
-                                        placeholder="Max Annual Salary"
-                                        id="maxSalary"
-                                        {...register("maxSalary", {
-                                            required: "This is required",
-                                        })}
-                                    />
-                                    <FormErrorMessage>
-                                        {errors.maxSalary?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                                <FormControl
-                                    width={{ base: "100%", md: "10%" }}
-                                    isInvalid={errors.currency !== undefined}
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel
-                                        htmlFor="currency"
-                                        display={"none"}
-                                    >
-                                        Currency
-                                    </FormLabel>
-                                    <Select
-                                        size={"lg"}
-                                        id="currency"
-                                        {...register("currency", {
-                                            required: "This is required",
-                                        })}
-                                    >
-                                        <option>GBP</option>
-                                        <option>USD</option>
-                                        <option>EUR</option>
-                                        <option>AUD</option>
-                                        <option>CAD</option>
-                                        <option>SGD</option>
-                                        <option>CHF</option>
-                                        <option>INR</option>
-                                        <option>JPY</option>
-                                    </Select>
-                                    <FormErrorMessage>
-                                        {errors.currency?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                            </Stack>
-                            <Stack
-                                direction={["column", "row"]}
-                                width={"100%"}
-                                gap={{ base: 0, md: "0.5rem" }}
-                            >
-                                <FormControl
-                                    width={{ base: "100%", md: "40%" }}
-                                    isInvalid={errors.companyName !== undefined}
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel
-                                        htmlFor="companyName"
-                                        display={"none"}
-                                    >
-                                        Company Name
-                                    </FormLabel>
-                                    <Input
-                                        size={"lg"}
-                                        id="companyName"
-                                        {...register("companyName", {
-                                            required: "This is required",
-                                            minLength: {
-                                                value: 2,
-                                                message:
-                                                    "Minimum length should be 2",
-                                            },
-                                        })}
-                                        type="text"
-                                        placeholder="Company Name"
-                                    />
-                                    <FormErrorMessage>
-                                        {errors.companyName?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                                <FormControl
-                                    width={{ base: "100%", md: "60%" }}
-                                    isInvalid={
-                                        errors.companyWebsite !== undefined
-                                    }
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel
-                                        htmlFor="companyWebsite"
-                                        display={"none"}
-                                    >
-                                        Company Website
-                                    </FormLabel>
-                                    <Input
-                                        size={"lg"}
-                                        id="companyWebsite"
-                                        {...register("companyWebsite", {
-                                            required: "This is required",
-                                            minLength: {
-                                                value: 2,
-                                                message:
-                                                    "Minimum length should be 2",
-                                            },
-                                        })}
-                                        type="text"
-                                        placeholder="Company Website"
-                                        mb="0.5rem"
-                                    />
-                                    <FormErrorMessage>
-                                        {errors.companyWebsite?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                            </Stack>
-                            <Stack
-                                direction={["column", "row"]}
-                                width={"100%"}
-                                gap={{ base: 0, md: "0.5rem" }}
-                            >
-                                <FormControl
-                                    isInvalid={errors.companyLogo !== undefined}
-                                    mb={"1rem"}
-                                >
-                                    <FormLabel
-                                        htmlFor="companyLogo"
-                                        display={"none"}
-                                    >
-                                        Company Logo
-                                    </FormLabel>
-                                    <Button
-                                        className="button-upload"
-                                        onClick={handleClick}
-                                        bg={"upfront.300"}
-                                        _hover={{
-                                            bg: "upfront.200",
-                                        }}
-                                        color="white"
-                                        mb="0.5rem"
-                                    >
-                                        <AddIcon mr="0.5rem" />
-                                        Upload Company Logo
-                                    </Button>
-                                    <Input
-                                        type="file"
-                                        accept="image/*"
-                                        id="companyLogo"
-                                        {...register("companyLogo", {
-                                            required: "This is required",
-                                            onChange: fileUploadInputChange,
-                                        })}
-                                        ref={hiddenFileInput}
-                                        style={{ display: "none" }} // Make the file input element invisible
-                                    />
-                                    {fileName && <Text>{fileName}</Text>}
-                                    <FormErrorMessage>
-                                        {errors.companyLogo?.message?.toString()}
-                                    </FormErrorMessage>
-                                </FormControl>
-                            </Stack>
-
                             <FormControl
-                                isInvalid={errors.description !== undefined}
+                                width={{ base: "100%", md: "60%" }}
+                                isInvalid={errors.title !== undefined}
                                 mb={"1rem"}
                             >
-                                <FormLabel
-                                    htmlFor="description"
-                                    display={"none"}
-                                >
-                                    Description
+                                <FormLabel htmlFor="title" display={"none"}>
+                                    Job Title
                                 </FormLabel>
-                                <SimpleMdeReact
-                                    id="description"
-                                    {...register("description", {
-                                        required: "This is required",
-                                    })}
-                                    style={{
-                                        width: "100%",
-                                    }}
-                                    onChange={onChange}
-                                />
-                                <FormErrorMessage>
-                                    {errors.description?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-
-                            <FormControl
-                                isInvalid={errors.visaSponsorship !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel
-                                    htmlFor="visaSponsorship"
-                                    display={"none"}
-                                >
-                                    Visa Sponsorship
-                                </FormLabel>
-                                <Checkbox
+                                <Input
                                     size={"lg"}
-                                    id="visaSponsorship"
-                                    {...register("visaSponsorship", {})}
-                                >
-                                    VISA Sponsorship offered?
-                                </Checkbox>
-                            </FormControl>
-
-                            <FormControl
-                                isInvalid={errors.howToApply !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel
-                                    htmlFor="howToApply"
-                                    display={"none"}
-                                >
-                                    How To Apply
-                                </FormLabel>
-                                <Input
-                                    size="lg"
-                                    type="url"
-                                    id="howToApply"
-                                    placeholder="How to apply (Email or URL)"
-                                    {...register("howToApply", {
+                                    id="title"
+                                    {...register("title", {
                                         required: "This is required",
                                         minLength: {
                                             value: 2,
                                             message:
                                                 "Minimum length should be 2",
                                         },
+                                        maxLength: {
+                                            value: 45,
+                                            message:
+                                                "Maximum length is 50 characters",
+                                        },
                                     })}
+                                    maxLength={45}
+                                    type="text"
+                                    placeholder="Job Title"
                                 />
                                 <FormErrorMessage>
-                                    {errors.howToApply?.message?.toString()}
+                                    {errors.title?.message?.toString()}
                                 </FormErrorMessage>
                             </FormControl>
                             <FormControl
-                                isInvalid={errors.yourEmail !== undefined}
+                                width={{ base: "100%", md: "40%" }}
+                                isInvalid={errors.location !== undefined}
                                 mb={"1rem"}
                             >
-                                <FormLabel htmlFor="yourEmail" display={"none"}>
-                                    Your Email
+                                <FormLabel htmlFor="location" display={"none"}>
+                                    Job Location
                                 </FormLabel>
                                 <Input
-                                    size="lg"
-                                    type="email"
-                                    placeholder="Your email (will be used to log in)"
-                                    id="yourEmail"
-                                    {...register("yourEmail", {
+                                    size={"lg"}
+                                    id="location"
+                                    {...register("location", {
                                         required: "This is required",
                                         minLength: {
                                             value: 2,
                                             message:
                                                 "Minimum length should be 2",
                                         },
+                                        maxLength: {
+                                            value: 40,
+                                            message:
+                                                "Maximum length is 40 characters",
+                                        },
                                     })}
+                                    type="text"
+                                    maxLength={40}
+                                    placeholder="Job Location"
                                 />
                                 <FormErrorMessage>
-                                    {errors.yourEmail?.message?.toString()}
+                                    {errors.location?.message?.toString()}
                                 </FormErrorMessage>
                             </FormControl>
                         </Stack>
+                        <Stack
+                            direction={["column", "row"]}
+                            width={"100%"}
+                            gap={{ base: 0, md: "0.5rem" }}
+                        >
+                            <FormControl
+                                width={{ base: "100%", md: "45%" }}
+                                isInvalid={errors.minSalary !== undefined}
+                                mb={"1rem"}
+                            >
+                                <FormLabel htmlFor="minSalary" display={"none"}>
+                                    Minimum Salary
+                                </FormLabel>
+                                <Input
+                                    size={"lg"}
+                                    type="number"
+                                    placeholder="Min Annual Salary"
+                                    id="minSalary"
+                                    {...register("minSalary", {
+                                        required: "This is required",
+                                    })}
+                                />
+                                <FormErrorMessage>
+                                    {errors.minSalary?.message?.toString()}
+                                </FormErrorMessage>
+                            </FormControl>
+                            <FormControl
+                                width={{ base: "100%", md: "45%" }}
+                                isInvalid={errors.maxSalary !== undefined}
+                                mb={"1rem"}
+                            >
+                                <FormLabel htmlFor="maxSalary" display={"none"}>
+                                    Maximum Salary
+                                </FormLabel>
+                                <Input
+                                    size={"lg"}
+                                    type="number"
+                                    placeholder="Max Annual Salary"
+                                    id="maxSalary"
+                                    {...register("maxSalary", {
+                                        required: "This is required",
+                                    })}
+                                />
+                                <FormErrorMessage>
+                                    {errors.maxSalary?.message?.toString()}
+                                </FormErrorMessage>
+                            </FormControl>
+                            <FormControl
+                                width={{ base: "100%", md: "10%" }}
+                                isInvalid={errors.currency !== undefined}
+                                mb={"1rem"}
+                            >
+                                <FormLabel htmlFor="currency" display={"none"}>
+                                    Currency
+                                </FormLabel>
+                                <Select
+                                    size={"lg"}
+                                    id="currency"
+                                    {...register("currency", {
+                                        required: "This is required",
+                                    })}
+                                >
+                                    <option>GBP</option>
+                                    <option>USD</option>
+                                    <option>EUR</option>
+                                    <option>AUD</option>
+                                    <option>CAD</option>
+                                    <option>SGD</option>
+                                    <option>CHF</option>
+                                    <option>INR</option>
+                                    <option>JPY</option>
+                                </Select>
+                                <FormErrorMessage>
+                                    {errors.currency?.message?.toString()}
+                                </FormErrorMessage>
+                            </FormControl>
+                        </Stack>
+                        <Stack
+                            direction={["column", "row"]}
+                            width={"100%"}
+                            gap={{ base: 0, md: "0.5rem" }}
+                        >
+                            <FormControl
+                                width={{ base: "100%", md: "40%" }}
+                                isInvalid={errors.companyName !== undefined}
+                                mb={"1rem"}
+                            >
+                                <FormLabel
+                                    htmlFor="companyName"
+                                    display={"none"}
+                                >
+                                    Company Name
+                                </FormLabel>
+                                <Input
+                                    size={"lg"}
+                                    id="companyName"
+                                    {...register("companyName", {
+                                        required: "This is required",
+                                        minLength: {
+                                            value: 2,
+                                            message:
+                                                "Minimum length should be 2",
+                                        },
+                                    })}
+                                    type="text"
+                                    placeholder="Company Name"
+                                />
+                                <FormErrorMessage>
+                                    {errors.companyName?.message?.toString()}
+                                </FormErrorMessage>
+                            </FormControl>
+                            <FormControl
+                                width={{ base: "100%", md: "60%" }}
+                                isInvalid={errors.companyWebsite !== undefined}
+                                mb={"1rem"}
+                            >
+                                <FormLabel
+                                    htmlFor="companyWebsite"
+                                    display={"none"}
+                                >
+                                    Company Website
+                                </FormLabel>
+                                <Input
+                                    size={"lg"}
+                                    id="companyWebsite"
+                                    {...register("companyWebsite", {
+                                        required: "This is required",
+                                        minLength: {
+                                            value: 2,
+                                            message:
+                                                "Minimum length should be 2",
+                                        },
+                                    })}
+                                    type="text"
+                                    placeholder="Company Website"
+                                    mb="0.5rem"
+                                />
+                                <FormErrorMessage>
+                                    {errors.companyWebsite?.message?.toString()}
+                                </FormErrorMessage>
+                            </FormControl>
+                        </Stack>
+                        <Stack
+                            direction={["column", "row"]}
+                            width={"100%"}
+                            gap={{ base: 0, md: "0.5rem" }}
+                        >
+                            <FormControl
+                                isInvalid={errors.companyLogo !== undefined}
+                                mb={"1rem"}
+                            >
+                                <FormLabel
+                                    htmlFor="companyLogo"
+                                    display={"none"}
+                                >
+                                    Company Logo
+                                </FormLabel>
+                                <Button
+                                    className="button-upload"
+                                    onClick={handleClick}
+                                    bg={"upfront.300"}
+                                    _hover={{
+                                        bg: "upfront.200",
+                                    }}
+                                    color="white"
+                                    mb="0.5rem"
+                                >
+                                    <AddIcon mr="0.5rem" />
+                                    Upload Company Logo
+                                </Button>
+                                <Input
+                                    type="file"
+                                    accept="image/*"
+                                    id="companyLogo"
+                                    {...register("companyLogo", {
+                                        required: "This is required",
+                                        onChange: fileUploadInputChange,
+                                    })}
+                                    ref={hiddenFileInput}
+                                    style={{ display: "none" }} // Make the file input element invisible
+                                />
+                                {fileName && <Text>{fileName}</Text>}
+                                <FormErrorMessage>
+                                    {errors.companyLogo?.message?.toString()}
+                                </FormErrorMessage>
+                            </FormControl>
+                        </Stack>
+
+                        <FormControl
+                            isInvalid={errors.description !== undefined}
+                            mb={"1rem"}
+                        >
+                            <FormLabel htmlFor="description" display={"none"}>
+                                Description
+                            </FormLabel>
+                            <SimpleMdeReact
+                                id="description"
+                                {...register("description", {
+                                    required: "This is required",
+                                })}
+                                style={{
+                                    width: "100%",
+                                }}
+                                onChange={onChange}
+                            />
+                            <FormErrorMessage>
+                                {errors.description?.message?.toString()}
+                            </FormErrorMessage>
+                        </FormControl>
+
+                        <FormControl
+                            isInvalid={errors.visaSponsorship !== undefined}
+                            mb={"1rem"}
+                        >
+                            <FormLabel
+                                htmlFor="visaSponsorship"
+                                display={"none"}
+                            >
+                                Visa Sponsorship
+                            </FormLabel>
+                            <Checkbox
+                                size={"lg"}
+                                id="visaSponsorship"
+                                {...register("visaSponsorship", {})}
+                            >
+                                VISA Sponsorship offered?
+                            </Checkbox>
+                        </FormControl>
+
+                        <FormControl
+                            isInvalid={errors.howToApply !== undefined}
+                            mb={"1rem"}
+                        >
+                            <FormLabel htmlFor="howToApply" display={"none"}>
+                                How To Apply
+                            </FormLabel>
+                            <Input
+                                size="lg"
+                                type="url"
+                                id="howToApply"
+                                placeholder="How to apply (Email or URL)"
+                                {...register("howToApply", {
+                                    required: "This is required",
+                                    minLength: {
+                                        value: 2,
+                                        message: "Minimum length should be 2",
+                                    },
+                                })}
+                            />
+                            <FormErrorMessage>
+                                {errors.howToApply?.message?.toString()}
+                            </FormErrorMessage>
+                        </FormControl>
+                        <FormControl
+                            isInvalid={errors.yourEmail !== undefined}
+                            mb={"1rem"}
+                        >
+                            <FormLabel htmlFor="yourEmail" display={"none"}>
+                                Your Email
+                            </FormLabel>
+                            <Input
+                                size="lg"
+                                type="email"
+                                placeholder="Your email (will be used to log in)"
+                                id="yourEmail"
+                                {...register("yourEmail", {
+                                    required: "This is required",
+                                    minLength: {
+                                        value: 2,
+                                        message: "Minimum length should be 2",
+                                    },
+                                })}
+                            />
+                            <FormErrorMessage>
+                                {errors.yourEmail?.message?.toString()}
+                            </FormErrorMessage>
+                        </FormControl>
                     </form>
+                </Box>
+                <Center>
+                    <JobPost {...formValues} />
+                </Center>
+                <Box
+                    my={"2rem"}
+                    background={"upfront.300"}
+                    color="white"
+                    padding={"1rem"}
+                    borderRadius="5px"
+                    fontWeight={800}
+                    boxShadow={"lg"}
+                >
+                    <Text
+                        fontSize={"2rem"}
+                        mx={{ base: 0, md: "1rem" }}
+                        my="1rem"
+                    >
+                        Pricing plans
+                    </Text>
+                    <Text
+                        fontSize={"1.5rem"}
+                        mx={{ base: 0, md: "1rem" }}
+                        my="1rem"
+                    >
+                        Please select how long you'd like to advertise your Job
+                        with us:
+                    </Text>
+                    <Select
+                        onChange={(e: any) => setDuration(e.target.value)}
+                        value={duration}
+                        background={"white"}
+                        color="black"
+                        width={{ base: "100%", md: "30%" }}
+                        mx={{ base: 0, md: "1rem" }}
+                    >
+                        {[1, 2, 3, 4, 5, 6].map((x) => {
+                            return (
+                                <option key={x} value={x}>
+                                    {x * 30} Days
+                                </option>
+                            );
+                        })}
+                    </Select>
+                    <Stack direction={["column", "row"]} width={"100%"}>
+                        <PaymentPlan
+                            duration={duration}
+                            planName="Standard"
+                            priceFactor={35}
+                            width={{ base: "100%", md: "50%" }}
+                            handleSubmit={onSubmit}
+                        />
+                        <PaymentPlan
+                            duration={duration}
+                            planName="Premium"
+                            priceFactor={90}
+                            width={{ base: "100%", md: "50%" }}
+                            handleSubmit={onSubmit}
+                        />
+                    </Stack>
                 </Box>
             </Layout>
         </>
     );
 }
+
+interface PaymentPlanProps extends BoxProps {
+    duration: number;
+    priceFactor: number;
+    planName: string;
+    handleSubmit: (productName: string, amount: number) => Promise<void>;
+}
+
+const PaymentPlan = ({
+    duration,
+    priceFactor,
+    planName,
+    handleSubmit,
+    ...rest
+}: PaymentPlanProps) => {
+    return (
+        <Box
+            textAlign={"center"}
+            padding="1rem"
+            my="1rem"
+            border={"1px solid"}
+            borderRadius="5px"
+            borderColor={"upfront.300"}
+            background={"white"}
+            color="black"
+            fontSize={"1.5rem"}
+            boxShadow={"lg"}
+            {...rest}
+        >
+            <Text fontSize={"2rem"}>The {planName} Plan</Text>
+            <Text fontWeight={800} fontSize={"2rem"}>
+                £{duration * priceFactor}
+            </Text>
+            <Button
+                size={"lg"}
+                fontSize={"1.5rem"}
+                fontWeight={600}
+                color={"white"}
+                bg={"upfront.300"}
+                _hover={{
+                    bg: "upfront.200",
+                }}
+                onClick={() => handleSubmit(planName, duration * priceFactor)}
+            >
+                Post Job
+            </Button>
+        </Box>
+    );
+};
 
 type Currency =
     | "GBP"
@@ -584,8 +684,9 @@ const JobPost = ({
             border={"1px solid"}
             borderRadius="5px"
             borderColor={"upfront.300"}
+            boxShadow={"lg"}
             padding="1rem"
-            width="100%"
+            width={{ base: "100%", xl: "60%" }}
         >
             <HStack gap={{ base: "0.5rem", md: "1rem" }}>
                 <Box

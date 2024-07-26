@@ -29,7 +29,7 @@ export default function Navbar() {
     const router = useRouter();
 
     return (
-        <Box mb="1rem" mx={"2rem"}>
+        <Box mb={{ base: 0, md: "1rem" }} mx={{ base: 0, md: "2rem" }}>
             <Flex
                 bg={useColorModeValue("white", "gray.800")}
                 color={useColorModeValue("gray.600", "white")}
@@ -222,6 +222,7 @@ const MobileNav = ({ router }: { router: NextRouter }) => {
             bg={useColorModeValue("white", "gray.800")}
             p={4}
             display={{ md: "none" }}
+            className="navbar"
         >
             {NAV_ITEMS.map((navItem) => (
                 <MobileNavItem key={navItem.label} {...navItem} />
@@ -231,6 +232,7 @@ const MobileNav = ({ router }: { router: NextRouter }) => {
                 justify={"flex-end"}
                 direction={"column"}
                 spacing={6}
+                className={"buttons"}
             >
                 <Button as="a" onClick={() => router.push("/job-post")}>
                     Post a job

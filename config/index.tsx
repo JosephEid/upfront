@@ -4,3 +4,5 @@ export const CURRENCY = "gbp";
 export const MIN_AMOUNT = 35.0;
 export const MAX_AMOUNT = 540.0;
 export const AMOUNT_STEP = 5.0;
+export const PREMIUM_FACTOR = 90;
+export const STANDARD_FACTOR = 35;

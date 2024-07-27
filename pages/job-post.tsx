@@ -24,7 +24,14 @@ import { FaMapPin } from "react-icons/fa";
 const SimpleMdeReact = dynamic(() => import("react-simplemde-editor"), {
     ssr: false,
 });
-import { useCallback, useRef, useState } from "react";
+import {
+    BaseSyntheticEvent,
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useRef,
+    useState,
+} from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import { AddIcon } from "@chakra-ui/icons";
@@ -33,6 +40,9 @@ import Layout from "@/components/Layout";
 import { useForm } from "react-hook-form";
 import getStripe from "@/utils/get-stripe";
 import { fetchPostJSON } from "@/utils/api-helpers";
+import { PREMIUM_FACTOR, STANDARD_FACTOR } from "@/config";
+
+type PlanType = "Standard" | "Premium";
 
 export default function Home() {
     const hiddenFileInput = useRef(null);
@@ -42,6 +52,7 @@ export default function Home() {
 
     const [duration, setDuration] = useState<number>(1);
     const [fileName, setFileName] = useState<string>();
+    const [planType, setPlanType] = useState<PlanType>();
 
     const handleClick = () => {
         if (hiddenFileInput.current) {
@@ -79,14 +90,20 @@ export default function Home() {
         setValue,
         watch,
         getValues,
+        trigger,
+        handleSubmit,
     } = useForm({ defaultValues: defaultValues });
 
-    async function onSubmit(productName: string, amount: number) {
-        console.log(getValues());
+    async function onSubmit(values: JobPostProps) {
+        console.log(values);
+
         // Create a Checkout Session.
         const response = await fetchPostJSON("/api/checkout_sessions", {
-            amount,
-            productName,
+            amount:
+                planType === "Premium"
+                    ? duration * PREMIUM_FACTOR
+                    : duration * STANDARD_FACTOR,
+            productName: `${planType} plan for ${values.companyName}`,
         });
 
         if (response.statusCode === 500) {
@@ -541,17 +558,19 @@ export default function Home() {
                     <Stack direction={["column", "row"]} width={"100%"}>
                         <PaymentPlan
                             duration={duration}
-                            planName="Standard"
+                            planType="Standard"
                             priceFactor={35}
                             width={{ base: "100%", md: "50%" }}
-                            handleSubmit={onSubmit}
+                            setPlan={setPlanType}
+                            handleSubmit={handleSubmit(onSubmit)}
                         />
                         <PaymentPlan
                             duration={duration}
-                            planName="Premium"
+                            planType="Premium"
                             priceFactor={90}
                             width={{ base: "100%", md: "50%" }}
-                            handleSubmit={onSubmit}
+                            setPlan={setPlanType}
+                            handleSubmit={handleSubmit(onSubmit)}
                         />
                     </Stack>
                 </Box>
@@ -563,14 +582,18 @@ export default function Home() {
 interface PaymentPlanProps extends BoxProps {
     duration: number;
     priceFactor: number;
-    planName: string;
-    handleSubmit: (productName: string, amount: number) => Promise<void>;
+    planType: PlanType;
+    setPlan: Dispatch<SetStateAction<PlanType | undefined>>;
+    handleSubmit: (
+        e?: BaseSyntheticEvent<object, any, any> | undefined
+    ) => Promise<void>;
 }
 
 const PaymentPlan = ({
     duration,
     priceFactor,
-    planName,
+    planType,
+    setPlan,
     handleSubmit,
     ...rest
 }: PaymentPlanProps) => {
@@ -588,7 +611,7 @@ const PaymentPlan = ({
             boxShadow={"lg"}
             {...rest}
         >
-            <Text fontSize={"2rem"}>The {planName} Plan</Text>
+            <Text fontSize={"2rem"}>The {planType} Plan</Text>
             <Text fontWeight={800} fontSize={"2rem"}>
                 £{duration * priceFactor}
             </Text>
@@ -601,7 +624,10 @@ const PaymentPlan = ({
                 _hover={{
                     bg: "upfront.200",
                 }}
-                onClick={() => handleSubmit(planName, duration * priceFactor)}
+                onClick={() => {
+                    setPlan(planType);
+                    handleSubmit();
+                }}
             >
                 Post Job
             </Button>

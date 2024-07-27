@@ -41,7 +41,7 @@ export default async function handler(
                     },
                 ],
                 mode: "payment",
-                success_url: `${req.headers.origin}/result?session_id={CHECKOUT_SESSION_ID}`,
+                success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${req.headers.origin}/job-post`,
             };
             const checkoutSession: Stripe.Checkout.Session =

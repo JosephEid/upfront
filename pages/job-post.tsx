@@ -536,8 +536,8 @@ export default function Home() {
                         mx={{ base: 0, md: "1rem" }}
                         my="1rem"
                     >
-                        Please select how long you'd like to advertise your Job
-                        with us:
+                        Please select how long you&apos;d like to advertise your
+                        Job with us:
                     </Text>
                     <Select
                         onChange={(e: any) => setDuration(e.target.value)}

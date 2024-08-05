@@ -3,8 +3,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 import Stripe from "stripe";
 import { formatAmountForStripe } from "../../../utils/stripe-helpers";
+import { secret } from "@aws-amplify/backend";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(secret("stripeSecretKey").toString(), {
     // https://github.com/stripe/stripe-node#configuration
     apiVersion: "2024-06-20",
 });
@@ -13,6 +14,7 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
+    console.log(process.env.secrets);
     if (req.method === "POST") {
         const amount: number = req.body.amount;
         const productName: string = req.body.productName;
@@ -44,8 +46,9 @@ export default async function handler(
                 success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${req.headers.origin}/job-post`,
             };
-            const checkoutSession: Stripe.Checkout.Session =
-                await stripe.checkout.sessions.create(params);
+            const checkoutSession: Stripe.Checkout.Session = await stripe.checkout.sessions.create(
+                params
+            );
 
             res.status(200).json(checkoutSession);
         } catch (err) {

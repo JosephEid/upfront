@@ -1,0 +1,20 @@
+CREATE TABLE job_posts (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255) NOT NULL,
+    company_website VARCHAR(255) NOT NULL,
+    currency VARCHAR(8) NOT NULL,
+    description TEXT NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    min_salary integer NOT NULL,
+    max_salary integer NOT NULL,
+    login_email VARCHAR(255) NOT NULL,
+    how_to_apply VARCHAR(255) NOT NULL,
+    visa_sponsorship boolean NOT NULL DEFAULT FALSE,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    plan_type VARCHAR(50) NOT NULL,
+    payment_intent_id VARCHAR(50),
+    checkout_session_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT (now() at time zone 'utc')
+);

@@ -48,9 +48,7 @@ export const ComingSoon = () => {
         }
     };
 
-    const submit = () => {
-        console.log(email);
-    };
+    const submit = () => {};
 
     return (
         <>

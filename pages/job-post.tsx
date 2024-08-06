@@ -41,8 +41,11 @@ import { useForm } from "react-hook-form";
 import getStripe from "@/utils/get-stripe";
 import { fetchPostJSON } from "@/utils/api-helpers";
 import { PREMIUM_FACTOR, STANDARD_FACTOR } from "@/config";
+import { CheckoutSessionRequest } from "./api/checkout_sessions";
+import { CreateJobRequest } from "./api/createJob";
 
-type PlanType = "Standard" | "Premium";
+export type PlanType = "Standard" | "Premium";
+export type JobPostStatus = "pending" | "active" | "inactive";
 
 export default function Home() {
     const hiddenFileInput = useRef(null);
@@ -77,8 +80,8 @@ export default function Home() {
         howToApply: "",
         location: "",
         description: "",
-        maxSalary: "",
-        minSalary: "",
+        maxSalary: 0,
+        minSalary: 0,
         title: "",
         visaSponsorship: false,
         yourEmail: "",
@@ -95,19 +98,42 @@ export default function Home() {
     } = useForm({ defaultValues: defaultValues });
 
     async function onSubmit(values: JobPostProps) {
-        console.log(values);
-
         // Create a Checkout Session.
-        const response = await fetchPostJSON("/api/checkout_sessions", {
+        const checkoutSessionResponse = await fetchPostJSON(
+            "/api/checkout_sessions",
+            {
+                amount:
+                    planType === "Premium"
+                        ? duration * PREMIUM_FACTOR
+                        : duration * STANDARD_FACTOR,
+                productName: `${planType} plan for ${values.companyName}`,
+                values,
+            } as CheckoutSessionRequest
+        );
+
+        if (checkoutSessionResponse.statusCode === 500) {
+            console.error(checkoutSessionResponse.message);
+            return;
+        }
+
+        const createJobRequest: CreateJobRequest = {
             amount:
                 planType === "Premium"
                     ? duration * PREMIUM_FACTOR
                     : duration * STANDARD_FACTOR,
-            productName: `${planType} plan for ${values.companyName}`,
-        });
+            planType: planType!,
+            values,
+            checkoutSessionId: checkoutSessionResponse.session.id,
+            id: checkoutSessionResponse.post_id,
+            status: "pending",
+        };
+        const createJobResponse = await fetchPostJSON(
+            "/api/createJob",
+            createJobRequest
+        );
 
-        if (response.statusCode === 500) {
-            console.error(response.message);
+        if (createJobResponse.statusCode === 500) {
+            console.error(createJobResponse.message);
             return;
         }
 
@@ -117,7 +143,7 @@ export default function Home() {
             // Make the id field from the Checkout Session creation API response
             // available to this file, so you can provide it as parameter here
             // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
-            sessionId: response.id,
+            sessionId: checkoutSessionResponse.session.id,
         });
         // If `redirectToCheckout` fails due to a browser or network
         // error, display the localized error message to your customer
@@ -662,20 +688,12 @@ function getCurrencySymbol(currency: Currency): string {
     return currencySymbols[currency];
 }
 
-function formatNumberWithCommas(number: string): string {
-    // Convert input to a number
-    const num = parseFloat(number);
-
-    // Ensure the number is valid
-    if (isNaN(num)) {
-        throw new Error("Invalid number input.");
-    }
-
+function formatNumberWithCommas(number: number): string {
     // Format number with commas
-    return new Intl.NumberFormat("en-US").format(num);
+    return new Intl.NumberFormat("en-US").format(number);
 }
 
-interface JobPostProps {
+export interface JobPostProps extends BoxProps {
     companyLogo: string;
     companyName: string;
     companyWebsite: string;
@@ -683,14 +701,14 @@ interface JobPostProps {
     description: string;
     howToApply: string;
     location: string;
-    maxSalary: string;
-    minSalary: string;
+    maxSalary: number;
+    minSalary: number;
     title: string;
     visaSponsorship: false;
     yourEmail: string;
 }
 
-const JobPost = ({
+export const JobPost = ({
     companyLogo,
     companyName,
     companyWebsite,
@@ -771,15 +789,11 @@ const JobPost = ({
                             ago
                         </Text>
                         <Text fontSize={{ base: "1rem", md: "1.5rem" }}>
-                            {`${currencySymbol}${
-                                minSalary === ""
-                                    ? 0
-                                    : formatNumberWithCommas(minSalary)
-                            } to ${currencySymbol}${
-                                maxSalary === ""
-                                    ? 0
-                                    : formatNumberWithCommas(maxSalary)
-                            }`}{" "}
+                            {`${currencySymbol}${formatNumberWithCommas(
+                                minSalary
+                            )} to ${currencySymbol}${formatNumberWithCommas(
+                                maxSalary
+                            )}`}{" "}
                             per annum
                         </Text>
                     </Box>

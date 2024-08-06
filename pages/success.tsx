@@ -1,8 +1,22 @@
 import Head from "next/head";
-import { Text } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
+import useSWR from "swr";
+import { useRouter } from "next/router";
+import { fetchGetJSON } from "@/utils/api-helpers";
 
 export default function Success() {
+    const router = useRouter();
+
+    const { data, error } = useSWR(
+        router.query.session_id
+            ? `/api/checkout_sessions/${router.query.session_id}`
+            : null,
+        fetchGetJSON
+    );
+
+    if (error) return <div>failed to load</div>;
+
     return (
         <>
             <Head>
@@ -37,7 +51,14 @@ export default function Success() {
                         provided.
                     </Text>
                 </Text>
-                <Text fontSize="3rem">Payment Successful!</Text>
+                <div className="page-container">
+                    <h1>Checkout Payment Result</h1>
+                    <h2>
+                        Status: {data?.payment_intent?.status ?? "loading..."}
+                    </h2>
+                    <h3>CheckoutSession response:</h3>
+                    <Box>{data?.id ?? "loading..."}</Box>
+                </div>
             </Layout>
         </>
     );

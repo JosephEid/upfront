@@ -1,25 +1,45 @@
 import { CURRENCY, MAX_AMOUNT, MIN_AMOUNT } from "../../../config";
 import { NextApiRequest, NextApiResponse } from "next";
-
 import Stripe from "stripe";
 import { formatAmountForStripe } from "../../../utils/stripe-helpers";
+import { v4 as uuidv4 } from "uuid";
+import { JobPostProps } from "@/pages/job-post";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    // https://github.com/stripe/stripe-node#configuration
     apiVersion: "2024-06-20",
 });
+
+export interface CheckoutSessionRequest {
+    amount: number;
+    productName: string;
+    values: JobPostProps;
+}
+
+export interface CheckoutSessionResponse {
+    session: Stripe.Checkout.Session;
+    post_id: string;
+}
+
+function generateUUID(): string {
+    return uuidv4();
+}
 
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    console.log(process.env.secrets);
     if (req.method === "POST") {
-        const amount: number = req.body.amount;
-        const productName: string = req.body.productName;
         try {
+            const csRequest: CheckoutSessionRequest = req.body;
+            const id = generateUUID();
+
             // Validate the amount that was passed from the client.
-            if (!(amount >= MIN_AMOUNT && amount <= MAX_AMOUNT)) {
+            if (
+                !(
+                    csRequest.amount >= MIN_AMOUNT &&
+                    csRequest.amount <= MAX_AMOUNT
+                )
+            ) {
                 throw new Error("Invalid amount.");
             }
             // Create Checkout Sessions from body params.
@@ -32,10 +52,10 @@ export default async function handler(
                         price_data: {
                             currency: CURRENCY,
                             product_data: {
-                                name: productName,
+                                name: csRequest.productName,
                             },
                             unit_amount: formatAmountForStripe(
-                                amount,
+                                csRequest.amount,
                                 CURRENCY
                             ),
                         },
@@ -44,12 +64,18 @@ export default async function handler(
                 mode: "payment",
                 success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
                 cancel_url: `${req.headers.origin}/job-post`,
+                customer_email: csRequest.values.yourEmail,
+                client_reference_id: id,
             };
-            const checkoutSession: Stripe.Checkout.Session = await stripe.checkout.sessions.create(
-                params
-            );
+            const checkoutSession: Stripe.Checkout.Session =
+                await stripe.checkout.sessions.create(params);
 
-            res.status(200).json(checkoutSession);
+            const reponse: CheckoutSessionResponse = {
+                post_id: id,
+                session: checkoutSession,
+            };
+
+            res.status(200).json(reponse);
         } catch (err) {
             const errorMessage =
                 err instanceof Error ? err.message : "Internal server error";

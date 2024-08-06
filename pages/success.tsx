@@ -4,10 +4,14 @@ import Layout from "@/components/Layout";
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import { fetchGetJSON } from "@/utils/api-helpers";
+import { GetServerSideProps } from "next";
+import { sql } from "@vercel/postgres";
+import { useEffect } from "react";
+import { JobPost } from "./job-post";
+import { dbJobPostToUIJobPost } from "@/utils/job-helpers";
 
 export default function Success() {
     const router = useRouter();
-
     const { data, error } = useSWR(
         router.query.session_id
             ? `/api/checkout_sessions/${router.query.session_id}`
@@ -35,11 +39,13 @@ export default function Success() {
                 />
             </Head>
             <Layout>
-                <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
-                    Don&apos;t waste time. Be{" "}
-                    <Text as="span" fontWeight="800" color={"upfront.300"}>
-                        Upfront.
-                    </Text>
+                <Text
+                    fontSize={"2.5rem"}
+                    my="1rem"
+                    fontWeight="800"
+                    color={"upfront.300"}
+                >
+                    Success
                 </Text>
                 <Text fontWeight={700} fontSize={"2rem"} mb="1rem">
                     Where{" "}
@@ -51,14 +57,11 @@ export default function Success() {
                         provided.
                     </Text>
                 </Text>
-                <div className="page-container">
-                    <h1>Checkout Payment Result</h1>
-                    <h2>
-                        Status: {data?.payment_intent?.status ?? "loading..."}
-                    </h2>
-                    <h3>CheckoutSession response:</h3>
-                    <Box>{data?.id ?? "loading..."}</Box>
-                </div>
+                {data ? (
+                    <JobPost {...dbJobPostToUIJobPost(data)} />
+                ) : (
+                    "loading..."
+                )}
             </Layout>
         </>
     );

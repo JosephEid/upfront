@@ -68,7 +68,7 @@ export default function Home({ jobs }: { jobs: JobPostProps[] }) {
 
 export const getServerSideProps = (async () => {
     // Fetch data from external API
-    const { rows } = await sql`SELECT * from job_posts`;
+    const { rows } = await sql`SELECT * from job_posts WHERE status = 'active'`;
     const jobs: JobPostProps[] = rows.map((x) => {
         return {
             companyLogo: "",

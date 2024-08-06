@@ -693,7 +693,7 @@ function formatNumberWithCommas(number: number): string {
     return new Intl.NumberFormat("en-US").format(number);
 }
 
-export interface JobPostProps extends BoxProps {
+export interface JobPostProps {
     companyLogo: string;
     companyName: string;
     companyWebsite: string;

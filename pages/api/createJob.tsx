@@ -67,10 +67,3 @@ export default async function handler(
         res.status(405).end("Method Not Allowed");
     }
 }
-
-// The next lines are required for Pages API Routes only
-// export const config = {
-//     api: {
-//         bodyParser: false,
-//     },
-// };

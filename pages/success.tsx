@@ -1,14 +1,10 @@
 import Head from "next/head";
-import { Box, Text } from "@chakra-ui/react";
+import { Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import { fetchGetJSON } from "@/utils/api-helpers";
-import { GetServerSideProps } from "next";
-import { sql } from "@vercel/postgres";
-import { useEffect } from "react";
-import { JobPost } from "./job-post";
-import { dbJobPostToUIJobPost } from "@/utils/job-helpers";
+import { JobPost, JobPostProps } from "@/components/JobPost";
 
 export default function Success() {
     const router = useRouter();
@@ -57,11 +53,7 @@ export default function Success() {
                         provided.
                     </Text>
                 </Text>
-                {data ? (
-                    <JobPost {...dbJobPostToUIJobPost(data)} />
-                ) : (
-                    "loading..."
-                )}
+                {data ? <JobPost {...(data as JobPostProps)} /> : "loading..."}
             </Layout>
         </>
     );

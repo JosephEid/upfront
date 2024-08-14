@@ -23,7 +23,7 @@ export default async function handler(
             });
 
         const update =
-            await sql`UPDATE job_posts SET status = 'active', updated_at = CURRENT_TIMESTAMP WHERE id = ${checkout_session.client_reference_id} RETURNING *`;
+            await sql`UPDATE job_posts SET status = 'active', "updatedAt" = CURRENT_TIMESTAMP WHERE id = ${checkout_session.client_reference_id} RETURNING *`;
 
         res.status(200).json(update.rows[0]);
     } catch (err) {

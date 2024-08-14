@@ -90,7 +90,7 @@ export default function Navbar() {
                 >
                     <Button
                         display={{ base: "none", md: "inline-flex" }}
-                        onClick={() => router.push("/job-post")}
+                        onClick={() => router.push("/post-job")}
                     >
                         Post a job
                     </Button>
@@ -234,7 +234,7 @@ const MobileNav = ({ router }: { router: NextRouter }) => {
                 spacing={6}
                 className={"buttons"}
             >
-                <Button as="a" onClick={() => router.push("/job-post")}>
+                <Button as="a" onClick={() => router.push("/post-job")}>
                     Post a job
                 </Button>
                 <Button

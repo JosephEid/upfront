@@ -1,90 +1,65 @@
 import Head from "next/head";
-import Navbar from "../components/Navbar";
 import {
     Box,
-    BoxProps,
     Button,
     Center,
     Checkbox,
-    Container,
     FormControl,
     FormErrorMessage,
     FormLabel,
-    HStack,
     Icon,
-    Image,
     Input,
+    InputGroup,
     Select,
     Stack,
     Text,
-    VStack,
+    useRadio,
+    useRadioGroup,
 } from "@chakra-ui/react";
-import { FaMapPin } from "react-icons/fa";
+import { FaUpload } from "react-icons/fa";
 
 const SimpleMdeReact = dynamic(() => import("react-simplemde-editor"), {
     ssr: false,
 });
-import {
-    BaseSyntheticEvent,
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    useRef,
-    useState,
-} from "react";
+import { FC, ReactNode, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
-import { AddIcon } from "@chakra-ui/icons";
-import Markdown from "react-markdown";
 import Layout from "@/components/Layout";
-import { useForm } from "react-hook-form";
+import {
+    Control,
+    useController,
+    useForm,
+    UseFormRegisterReturn,
+} from "react-hook-form";
 import getStripe from "@/utils/get-stripe";
 import { fetchPostJSON } from "@/utils/api-helpers";
-import { PREMIUM_FACTOR, STANDARD_FACTOR } from "@/config";
-import { CheckoutSessionRequest } from "./api/checkout_sessions";
 import { CreateJobRequest } from "./api/createJob";
+import { Currency, JobPost } from "@/components/JobPost";
+import { priceFactors } from "@/config";
 
 export type PlanType = "Standard" | "Premium";
 export type JobPostStatus = "pending" | "active" | "inactive";
 
-export default function Home() {
-    const hiddenFileInput = useRef(null);
+export default function PostJob() {
     const onChange = useCallback((value: string) => {
         setValue("description", value);
     }, []);
 
-    const [duration, setDuration] = useState<number>(1);
-    const [fileName, setFileName] = useState<string>();
-    const [planType, setPlanType] = useState<PlanType>();
-
-    const handleClick = () => {
-        if (hiddenFileInput.current) {
-            (hiddenFileInput?.current as any).click();
-        }
-    };
-
-    function fileUploadInputChange(e: any) {
-        let reader = new FileReader();
-        reader.onload = function (e) {
-            setValue("companyLogo", e.target?.result as string);
-        };
-        reader.readAsDataURL(e.target.files[0]);
-        setFileName(e.target.files[0].name);
-    }
-
-    const defaultValues: JobPostProps = {
-        companyLogo: "",
+    const defaultValues: JobPostFormProps = {
+        companyLogoFileList: undefined,
         companyName: "",
         companyWebsite: "",
         currency: "GBP",
         howToApply: "",
         location: "",
         description: "",
-        maxSalary: 0,
-        minSalary: 0,
+        maxSalary: undefined,
+        minSalary: undefined,
         title: "",
         visaSponsorship: false,
-        yourEmail: "",
+        loginEmail: "",
+        planDuration: 30,
+        planType: "Premium",
     };
 
     const {
@@ -93,22 +68,17 @@ export default function Home() {
         setValue,
         watch,
         getValues,
-        trigger,
         handleSubmit,
+        control,
     } = useForm({ defaultValues: defaultValues });
 
-    async function onSubmit(values: JobPostProps) {
+    async function onSubmit(values: JobPostFormProps) {
         // Create a Checkout Session.
+        const totalAmount =
+            (values.planDuration * priceFactors[values.planType]) / 30;
         const checkoutSessionResponse = await fetchPostJSON(
             "/api/checkout_sessions",
-            {
-                amount:
-                    planType === "Premium"
-                        ? duration * PREMIUM_FACTOR
-                        : duration * STANDARD_FACTOR,
-                productName: `${planType} plan for ${values.companyName}`,
-                values,
-            } as CheckoutSessionRequest
+            values
         );
 
         if (checkoutSessionResponse.statusCode === 500) {
@@ -116,13 +86,22 @@ export default function Home() {
             return;
         }
 
+        const file = values.companyLogoFileList[0];
+
+        const response = await fetch(
+            `/api/upload?filename=${checkoutSessionResponse.post_id}`,
+            {
+                method: "POST",
+                body: file,
+            }
+        );
+
+        const responseBody = await response.json();
+
         const createJobRequest: CreateJobRequest = {
-            amount:
-                planType === "Premium"
-                    ? duration * PREMIUM_FACTOR
-                    : duration * STANDARD_FACTOR,
-            planType: planType!,
+            amount: totalAmount,
             values,
+            companyLogoUrl: responseBody.url,
             checkoutSessionId: checkoutSessionResponse.session.id,
             id: checkoutSessionResponse.post_id,
             status: "pending",
@@ -151,7 +130,21 @@ export default function Home() {
         console.warn(error.message);
     }
 
-    const formValues = watch() as JobPostProps;
+    const validateFiles = (value: FileList) => {
+        if (value.length < 1) {
+            return "Files is required";
+        }
+        for (const file of Array.from(value)) {
+            const fsMb = file.size / (1024 * 1024);
+            const MAX_FILE_SIZE = 10;
+            if (fsMb > MAX_FILE_SIZE) {
+                return "Max file size 10mb";
+            }
+        }
+        return true;
+    };
+
+    const formValues = watch() as JobPostFormProps;
 
     return (
         <>
@@ -188,7 +181,7 @@ export default function Home() {
                     <JobPost {...formValues} />
                 </Center>
                 <Box my="1rem">
-                    <form>
+                    <form onSubmit={handleSubmit(onSubmit)}>
                         <Stack
                             direction={["column", "row"]}
                             width={"100%"}
@@ -407,42 +400,29 @@ export default function Home() {
                             gap={{ base: 0, md: "0.5rem" }}
                         >
                             <FormControl
-                                isInvalid={errors.companyLogo !== undefined}
+                                isInvalid={
+                                    errors.companyLogoFileList !== undefined
+                                }
                                 mb={"1rem"}
                             >
                                 <FormLabel
-                                    htmlFor="companyLogo"
+                                    htmlFor="companyLogoFileList"
                                     display={"none"}
                                 >
                                     Company Logo
                                 </FormLabel>
-                                <Button
-                                    className="button-upload"
-                                    onClick={handleClick}
-                                    bg={"upfront.300"}
-                                    _hover={{
-                                        bg: "upfront.200",
-                                    }}
-                                    color="white"
-                                    mb="0.5rem"
-                                >
-                                    <AddIcon mr="0.5rem" />
-                                    Upload Company Logo
-                                </Button>
-                                <Input
-                                    type="file"
-                                    accept="image/*"
-                                    id="companyLogo"
-                                    {...register("companyLogo", {
-                                        required: "This is required",
-                                        onChange: fileUploadInputChange,
+                                <FileUpload
+                                    accept={"image/*"}
+                                    register={register("companyLogoFileList", {
+                                        validate: validateFiles,
                                     })}
-                                    ref={hiddenFileInput}
-                                    style={{ display: "none" }} // Make the file input element invisible
-                                />
-                                {fileName && <Text>{fileName}</Text>}
+                                >
+                                    <Button leftIcon={<Icon as={FaUpload} />}>
+                                        Upload Logo
+                                    </Button>
+                                </FileUpload>
                                 <FormErrorMessage>
-                                    {errors.companyLogo?.message?.toString()}
+                                    {errors.companyLogoFileList?.message?.toString()}
                                 </FormErrorMessage>
                             </FormControl>
                         </Stack>
@@ -513,7 +493,7 @@ export default function Home() {
                             </FormErrorMessage>
                         </FormControl>
                         <FormControl
-                            isInvalid={errors.yourEmail !== undefined}
+                            isInvalid={errors.loginEmail !== undefined}
                             mb={"1rem"}
                         >
                             <FormLabel htmlFor="yourEmail" display={"none"}>
@@ -523,8 +503,8 @@ export default function Home() {
                                 size="lg"
                                 type="email"
                                 placeholder="Your email (will be used to log in)"
-                                id="yourEmail"
-                                {...register("yourEmail", {
+                                id="loginEmail"
+                                {...register("loginEmail", {
                                     required: "This is required",
                                     minLength: {
                                         value: 2,
@@ -533,272 +513,226 @@ export default function Home() {
                                 })}
                             />
                             <FormErrorMessage>
-                                {errors.yourEmail?.message?.toString()}
+                                {errors.loginEmail?.message?.toString()}
                             </FormErrorMessage>
                         </FormControl>
+                        <Center>
+                            <JobPost {...formValues} />
+                        </Center>
+                        <Box
+                            my={"2rem"}
+                            background={"upfront.300"}
+                            color="white"
+                            padding={"1rem"}
+                            borderRadius="5px"
+                            fontWeight={800}
+                            boxShadow={"lg"}
+                        >
+                            <Text fontSize={"2rem"} my="1rem">
+                                Pricing plans
+                            </Text>
+                            <Text fontSize={"1.5rem"} my="1rem">
+                                Please select how long you&apos;d like to
+                                advertise your Job with us:
+                            </Text>
+                            <FormControl
+                                width={{ base: "100%", md: "30%" }}
+                                isInvalid={errors.planDuration !== undefined}
+                                mb={"1rem"}
+                            >
+                                <FormLabel
+                                    htmlFor="planDuration"
+                                    display={"none"}
+                                >
+                                    Plan Duration
+                                </FormLabel>
+                                <Select
+                                    size={"lg"}
+                                    id="planDuration"
+                                    background={"white"}
+                                    color="black"
+                                    width={{ base: "100%" }}
+                                    {...register("planDuration", {
+                                        required: "This is required",
+                                    })}
+                                >
+                                    {[1, 2, 3, 4, 5, 6].map((x) => {
+                                        return (
+                                            <option key={x * 30} value={x * 30}>
+                                                {x * 30} Days
+                                            </option>
+                                        );
+                                    })}
+                                </Select>
+                                <FormErrorMessage>
+                                    {errors.planDuration?.message?.toString()}
+                                </FormErrorMessage>
+                            </FormControl>
+                            <PlanTypes
+                                control={control}
+                                duration={getValues("planDuration")}
+                            />
+                            <Center>
+                                <Button
+                                    size={"lg"}
+                                    fontSize={"1.5rem"}
+                                    fontWeight={600}
+                                    color={"black"}
+                                    _hover={{
+                                        bg: "upfront.200",
+                                    }}
+                                    type="submit"
+                                    bg="white"
+                                    isLoading={isSubmitting}
+                                >
+                                    Post Job
+                                </Button>
+                            </Center>
+                        </Box>
                     </form>
-                </Box>
-                <Center>
-                    <JobPost {...formValues} />
-                </Center>
-                <Box
-                    my={"2rem"}
-                    background={"upfront.300"}
-                    color="white"
-                    padding={"1rem"}
-                    borderRadius="5px"
-                    fontWeight={800}
-                    boxShadow={"lg"}
-                >
-                    <Text
-                        fontSize={"2rem"}
-                        mx={{ base: 0, md: "1rem" }}
-                        my="1rem"
-                    >
-                        Pricing plans
-                    </Text>
-                    <Text
-                        fontSize={"1.5rem"}
-                        mx={{ base: 0, md: "1rem" }}
-                        my="1rem"
-                    >
-                        Please select how long you&apos;d like to advertise your
-                        Job with us:
-                    </Text>
-                    <Select
-                        onChange={(e: any) => setDuration(e.target.value)}
-                        value={duration}
-                        background={"white"}
-                        color="black"
-                        width={{ base: "100%", md: "30%" }}
-                        mx={{ base: 0, md: "1rem" }}
-                    >
-                        {[1, 2, 3, 4, 5, 6].map((x) => {
-                            return (
-                                <option key={x} value={x}>
-                                    {x * 30} Days
-                                </option>
-                            );
-                        })}
-                    </Select>
-                    <Stack direction={["column", "row"]} width={"100%"}>
-                        <PaymentPlan
-                            duration={duration}
-                            planType="Standard"
-                            priceFactor={35}
-                            width={{ base: "100%", md: "50%" }}
-                            setPlan={setPlanType}
-                            handleSubmit={handleSubmit(onSubmit)}
-                        />
-                        <PaymentPlan
-                            duration={duration}
-                            planType="Premium"
-                            priceFactor={90}
-                            width={{ base: "100%", md: "50%" }}
-                            setPlan={setPlanType}
-                            handleSubmit={handleSubmit(onSubmit)}
-                        />
-                    </Stack>
                 </Box>
             </Layout>
         </>
     );
 }
 
-interface PaymentPlanProps extends BoxProps {
-    duration: number;
-    priceFactor: number;
-    planType: PlanType;
-    setPlan: Dispatch<SetStateAction<PlanType | undefined>>;
-    handleSubmit: (
-        e?: BaseSyntheticEvent<object, any, any> | undefined
-    ) => Promise<void>;
-}
+type FileUploadProps = {
+    register: UseFormRegisterReturn;
+    accept?: string;
+    multiple?: boolean;
+    children?: ReactNode;
+};
 
-const PaymentPlan = ({
-    duration,
-    priceFactor,
-    planType,
-    setPlan,
-    handleSubmit,
-    ...rest
-}: PaymentPlanProps) => {
+const FileUpload = (props: FileUploadProps) => {
+    const { register, accept, children } = props;
+    const inputRef = useRef<HTMLInputElement | null>(null);
+    const { ref, ...rest } = register as {
+        ref: (instance: HTMLInputElement | null) => void;
+    };
+
+    const handleClick = () => inputRef.current?.click();
+
     return (
-        <Box
-            textAlign={"center"}
-            padding="1rem"
-            my="1rem"
-            border={"1px solid"}
-            borderRadius="5px"
-            borderColor={"upfront.300"}
-            background={"white"}
-            color="black"
-            fontSize={"1.5rem"}
-            boxShadow={"lg"}
-            {...rest}
-        >
-            <Text fontSize={"2rem"}>The {planType} Plan</Text>
-            <Text fontWeight={800} fontSize={"2rem"}>
-                £{duration * priceFactor}
-            </Text>
-            <Button
-                size={"lg"}
+        <InputGroup onClick={handleClick}>
+            <input
+                type={"file"}
+                hidden
+                accept={accept}
+                {...rest}
+                ref={(e) => {
+                    ref(e);
+                    inputRef.current = e;
+                }}
+            />
+            <>{children}</>
+        </InputGroup>
+    );
+};
+
+const PlanTypes: FC<{
+    control: Control<JobPostFormProps, any>;
+    duration: number;
+}> = ({ control, duration }) => {
+    const {
+        field,
+        formState: { errors },
+    } = useController({
+        control,
+        name: "planType",
+        rules: { required: { value: true, message: "Required field" } },
+    });
+    const { getRootProps, getRadioProps } = useRadioGroup({
+        name: "planType",
+        onChange: field.onChange,
+        value: field.value,
+    });
+
+    const group = getRootProps();
+
+    return (
+        <FormControl isRequired={true} isInvalid={!!errors.planType} mb={6}>
+            <FormLabel display={"none"}>planType</FormLabel>
+            <Stack direction={["column", "row"]} width={"100%"} {...group}>
+                {["Standard" as PlanType, "Premium" as PlanType].map(
+                    (value: PlanType) => {
+                        const radio = getRadioProps({ value });
+                        return (
+                            <RadioCard
+                                key={value}
+                                duration={duration}
+                                planType={value}
+                                {...radio}
+                            >
+                                {value}
+                            </RadioCard>
+                        );
+                    }
+                )}
+            </Stack>
+            <FormErrorMessage>{errors.planType?.message}</FormErrorMessage>
+        </FormControl>
+    );
+};
+
+const RadioCard: FC<any> = (props) => {
+    const { getInputProps, getCheckboxProps } = useRadio(props);
+
+    const input = getInputProps();
+    const checkbox = getCheckboxProps();
+
+    return (
+        <Box as="label" width={{ base: "100%", md: "50%" }}>
+            <input {...input} />
+            <Box
+                {...checkbox}
+                textAlign={"center"}
+                padding="1rem"
+                border={"1px solid"}
+                borderRadius="5px"
+                borderColor={"upfront.300"}
+                background={"white"}
+                color="black"
                 fontSize={"1.5rem"}
-                fontWeight={600}
-                color={"white"}
-                bg={"upfront.300"}
-                _hover={{
-                    bg: "upfront.200",
+                boxShadow={"lg"}
+                cursor="pointer"
+                borderWidth="1px"
+                _checked={{
+                    bg: "pink.500",
+                    color: "white",
+                    borderColor: "pink.500",
                 }}
-                onClick={() => {
-                    setPlan(planType);
-                    handleSubmit();
+                _focus={{
+                    boxShadow: "outline",
                 }}
+                px={5}
+                py={3}
             >
-                Post Job
-            </Button>
+                <Text fontSize={"2rem"}>The {props.children} Plan</Text>
+                <Text fontWeight={800} fontSize={"2rem"}>
+                    £
+                    {(props.duration *
+                        priceFactors[props.planType as PlanType]) /
+                        30}
+                </Text>
+                {props.children}
+            </Box>
         </Box>
     );
 };
 
-type Currency =
-    | "GBP"
-    | "USD"
-    | "EUR"
-    | "AUD"
-    | "CAD"
-    | "SGD"
-    | "CHF"
-    | "INR"
-    | "JPY";
-
-const currencySymbols: Record<Currency, string> = {
-    GBP: "£",
-    USD: "$",
-    EUR: "€",
-    AUD: "A$",
-    CAD: "C$",
-    SGD: "S$",
-    CHF: "CHF",
-    INR: "₹",
-    JPY: "¥",
-};
-
-function getCurrencySymbol(currency: Currency): string {
-    return currencySymbols[currency];
-}
-
-function formatNumberWithCommas(number: number): string {
-    // Format number with commas
-    return new Intl.NumberFormat("en-US").format(number);
-}
-
-export interface JobPostProps {
-    companyLogo: string;
+export interface JobPostFormProps {
+    companyLogoFileList?: any;
     companyName: string;
     companyWebsite: string;
     currency: Currency;
     description: string;
     howToApply: string;
     location: string;
-    maxSalary: number;
-    minSalary: number;
+    maxSalary?: number;
+    minSalary?: number;
     title: string;
     visaSponsorship: false;
-    yourEmail: string;
+    loginEmail: string;
+    planDuration: number;
+    planType: PlanType;
 }
-
-export const JobPost = ({
-    companyLogo,
-    companyName,
-    companyWebsite,
-    currency,
-    description,
-    howToApply,
-    location,
-    maxSalary,
-    minSalary,
-    title,
-    visaSponsorship,
-    yourEmail,
-}: JobPostProps) => {
-    const currencySymbol = getCurrencySymbol(currency);
-    return (
-        <Box
-            border={"1px solid"}
-            borderRadius="5px"
-            borderColor={"upfront.300"}
-            boxShadow={"lg"}
-            padding="1rem"
-            width={{ base: "100%", xl: "60%" }}
-        >
-            <HStack gap={{ base: "0.5rem", md: "1rem" }}>
-                <Box
-                    borderRadius="5px"
-                    minWidth={{ base: "50px", md: "100px" }}
-                    height={{ base: "50px", md: "100px" }}
-                >
-                    {companyLogo ? (
-                        <Image
-                            src={companyLogo}
-                            minWidth={{ base: "50px", md: "100px" }}
-                            height={{ base: "50px", md: "100px" }}
-                            borderRadius={"5px"}
-                            alt="Company logo"
-                        />
-                    ) : (
-                        <Image
-                            src={"/upfront/svg/logo-color-small.svg"}
-                            minWidth={{ base: "50px", md: "100px" }}
-                            height={{ base: "50px", md: "100px" }}
-                            borderRadius={"5px"}
-                            alt="Company logo"
-                        />
-                    )}
-                </Box>
-
-                <Stack alignItems={"left"} direction={["column", "row"]}>
-                    <Box>
-                        <Text fontSize={{ base: "1rem", md: "2rem" }}>
-                            <Text
-                                as="span"
-                                fontWeight="800"
-                                color={"upfront.300"}
-                            >
-                                {title === "" ? "Job Title" : title}
-                            </Text>
-                            {` @ `}
-                            <Text
-                                as="span"
-                                fontWeight="800"
-                                color={"upfront.300"}
-                            >
-                                {companyName === ""
-                                    ? "Company Name"
-                                    : companyName}
-                            </Text>
-                        </Text>
-                        <Text fontSize={{ base: "1rem", md: "1.25rem" }}>
-                            <Icon
-                                width="0.5em"
-                                as={FaMapPin}
-                                color="upfront.300"
-                                mr="0.5rem"
-                            />
-                            {location === "" ? "London, UK" : location} | 1 hour
-                            ago
-                        </Text>
-                        <Text fontSize={{ base: "1rem", md: "1.5rem" }}>
-                            {`${currencySymbol}${formatNumberWithCommas(
-                                minSalary
-                            )} to ${currencySymbol}${formatNumberWithCommas(
-                                maxSalary
-                            )}`}{" "}
-                            per annum
-                        </Text>
-                    </Box>
-                </Stack>
-            </HStack>
-        </Box>
-    );
-};

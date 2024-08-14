@@ -1,20 +1,11 @@
 import Head from "next/head";
-import Navbar from "../components/Navbar";
-import { Box, Container, HStack, Text } from "@chakra-ui/react";
+import { Box, Text } from "@chakra-ui/react";
 import JobSearch from "@/components/JobSearch";
-import { useRouter } from "next/router";
 import { Abel } from "next/font/google";
 import Layout from "@/components/Layout";
 import { GetServerSideProps } from "next";
-import { JobPost, JobPostProps } from "./job-post";
 import { sql } from "@vercel/postgres";
-import { copy } from "@vercel/blob";
-
-const abel = Abel({
-    subsets: ["latin"],
-    display: "swap",
-    weight: "400",
-});
+import { JobPost, JobPostProps, JobPostRecord } from "@/components/JobPost";
 
 export default function Home({ jobs }: { jobs: JobPostProps[] }) {
     return (
@@ -69,22 +60,14 @@ export default function Home({ jobs }: { jobs: JobPostProps[] }) {
 export const getServerSideProps = (async () => {
     // Fetch data from external API
     const { rows } = await sql`SELECT * from job_posts WHERE status = 'active'`;
-    const jobs: JobPostProps[] = rows.map((x) => {
+    const jobs: JobPostRecord[] = rows as JobPostRecord[];
+    const cleanedJobs: JobPostProps[] = jobs.map((x: JobPostRecord) => {
         return {
-            companyLogo: "",
-            companyName: x.company_name,
-            companyWebsite: x.company_website,
-            currency: x.currency,
-            description: x.description,
-            howToApply: x.how_to_apply,
-            location: x.location,
-            maxSalary: x.max_salary,
-            minSalary: x.min_salary,
-            title: x.title,
-            visaSponsorship: x.visa_sponsorship,
-            yourEmail: x.login_email,
+            ...x,
+            createdAt: x.createdAt?.toISOString(),
+            updatedAt: x.updatedAt?.toISOString(),
         };
     });
     // Pass data to the page via props
-    return { props: { jobs: jobs } };
+    return { props: { jobs: cleanedJobs } };
 }) satisfies GetServerSideProps<{ jobs: JobPostProps[] }>;

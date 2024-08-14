@@ -1,19 +1,18 @@
-import { CURRENCY, MAX_AMOUNT, MIN_AMOUNT } from "../../../config";
+import {
+    CURRENCY,
+    MAX_AMOUNT,
+    MIN_AMOUNT,
+    priceFactors,
+} from "../../../config";
 import { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
 import { formatAmountForStripe } from "../../../utils/stripe-helpers";
 import { v4 as uuidv4 } from "uuid";
-import { JobPostProps } from "@/pages/job-post";
+import { JobPostFormProps } from "@/pages/post-job";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: "2024-06-20",
 });
-
-export interface CheckoutSessionRequest {
-    amount: number;
-    productName: string;
-    values: JobPostProps;
-}
 
 export interface CheckoutSessionResponse {
     session: Stripe.Checkout.Session;
@@ -30,16 +29,15 @@ export default async function handler(
 ) {
     if (req.method === "POST") {
         try {
-            const csRequest: CheckoutSessionRequest = req.body;
+            const csRequest: JobPostFormProps = req.body;
             const id = generateUUID();
 
+            const totalAmount =
+                (csRequest.planDuration * priceFactors[csRequest.planType]) /
+                30;
+
             // Validate the amount that was passed from the client.
-            if (
-                !(
-                    csRequest.amount >= MIN_AMOUNT &&
-                    csRequest.amount <= MAX_AMOUNT
-                )
-            ) {
+            if (!(totalAmount >= MIN_AMOUNT && totalAmount <= MAX_AMOUNT)) {
                 throw new Error("Invalid amount.");
             }
             // Create Checkout Sessions from body params.
@@ -52,10 +50,10 @@ export default async function handler(
                         price_data: {
                             currency: CURRENCY,
                             product_data: {
-                                name: csRequest.productName,
+                                name: `${csRequest.planType} plan for ${csRequest.planDuration} days.`,
                             },
                             unit_amount: formatAmountForStripe(
-                                csRequest.amount,
+                                totalAmount,
                                 CURRENCY
                             ),
                         },
@@ -63,8 +61,8 @@ export default async function handler(
                 ],
                 mode: "payment",
                 success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-                cancel_url: `${req.headers.origin}/job-post`,
-                customer_email: csRequest.values.yourEmail,
+                cancel_url: `${req.headers.origin}/post-job`,
+                customer_email: csRequest.loginEmail,
                 client_reference_id: id,
             };
             const checkoutSession: Stripe.Checkout.Session =

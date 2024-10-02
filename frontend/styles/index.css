@@ -1,0 +1,10 @@
+.editor-toolbar {
+    border-color: #e2e8f0 !important;
+}
+.EasyMDEContainer .CodeMirror {
+    border-color: #e2e8f0 !important;
+}
+
+.CodeMirror-scroll {
+    min-height: 200px !important;
+}

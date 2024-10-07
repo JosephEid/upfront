@@ -4,8 +4,8 @@ import JobSearch from "@/components/JobSearch";
 import { Abel } from "next/font/google";
 import Layout from "@/components/Layout";
 import { GetServerSideProps } from "next";
-import { sql } from "@vercel/postgres";
 import { JobPost, JobPostProps, JobPostRecord } from "@/components/JobPost";
+import React from "react";
 
 export default function Home({ jobs }: { jobs: JobPostProps[] }) {
     return (

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log/slog"
 	"os"
 
@@ -38,7 +39,15 @@ func main() {
 		logger.Error(err.Error())
 		os.Exit(1)
 	}
-	h, err := createcheckoutsession.NewHandler(logger, result.SecretString)
+
+	var secretKeyValuePair map[string]string
+	if err = json.Unmarshal([]byte(*result.SecretString), &secretKeyValuePair); err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+	secret := secretKeyValuePair["STRIPE_SECRET_KEY"]
+
+	h, err := createcheckoutsession.NewHandler(logger, secret)
 	if err != nil {
 		logger.Error("could not create handler", slog.Any("error", err))
 		os.Exit(1)

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/aws/aws-cdk-go/awscdk/v2"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
@@ -29,7 +32,13 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		},
 	})
 
-	golambda.NewGoFunction(stack, jsii.String("createCheckoutSession"), &golambda.GoFunctionProps{
+	notFound := golambda.NewGoFunction(stack, jsii.String("notFound"), &golambda.GoFunctionProps{
+		Description: jsii.String("Returns a not found response."),
+		Entry:       jsii.String("../backend/api/handlers/notfound"),
+		MemorySize:  jsii.Number(128),
+	})
+
+	createCheckoutSession := golambda.NewGoFunction(stack, jsii.String("createCheckoutSession"), &golambda.GoFunctionProps{
 		Entry:       jsii.String("../backend/api/handlers/createcheckoutsession/post"),
 		Description: jsii.String("lambda responsible for creating checkout sessions"),
 		InitialPolicy: &[]awsiam.PolicyStatement{
@@ -39,6 +48,16 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 			}),
 		},
 	})
+	apiResourceOpts := &awsapigateway.ResourceOptions{}
+	apiLambdaOpts := &awsapigateway.LambdaIntegrationOptions{}
+	api := awsapigateway.NewLambdaRestApi(stack, jsii.String("upfront-api"), &awsapigateway.LambdaRestApiProps{
+		CloudWatchRole: jsii.Bool(false),
+		Handler:        notFound,
+		Proxy:          jsii.Bool(false),
+	})
+	upfront := api.Root().AddResource(jsii.String("upfront"), apiResourceOpts)
+	createCheckoutSessionPostIntegration := awsapigateway.NewLambdaIntegration(createCheckoutSession, apiLambdaOpts)
+	upfront.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{})
 
 	return stack
 }

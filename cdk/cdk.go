@@ -4,6 +4,8 @@ import (
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
+	golambda "github.com/aws/aws-cdk-go/awscdklambdagoalpha/v2"
 	"github.com/aws/constructs-go/constructs/v10"
 	"github.com/aws/jsii-runtime-go"
 )
@@ -24,6 +26,17 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		PartitionKey: &awsdynamodb.Attribute{
 			Name: jsii.String("pk"),
 			Type: awsdynamodb.AttributeType_STRING,
+		},
+	})
+
+	golambda.NewGoFunction(stack, jsii.String("createCheckoutSession"), &golambda.GoFunctionProps{
+		Entry:       jsii.String("../backend/api/handlers/createcheckoutsession/post"),
+		Description: jsii.String("lambda responsible for creating checkout sessions"),
+		InitialPolicy: &[]awsiam.PolicyStatement{
+			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+				Actions:   jsii.Strings("secretsmanager:GetSecretValue"),
+				Resources: jsii.Strings("*"),
+			}),
 		},
 	})
 

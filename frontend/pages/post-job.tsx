@@ -32,8 +32,6 @@ import {
     useForm,
     UseFormRegisterReturn,
 } from "react-hook-form";
-import getStripe from "@/utils/get-stripe";
-import { fetchPostJSON } from "@/utils/api-helpers";
 import { CreateJobRequest } from "./api/createJob";
 import { Currency, JobPost } from "@/components/JobPost";
 import { priceFactors } from "@/config";
@@ -77,58 +75,58 @@ export default function PostJob() {
         // Create a Checkout Session.
         const totalAmount =
             (values.planDuration * priceFactors[values.planType]) / 30;
-        const checkoutSessionResponse = await fetchPostJSON(
-            "/api/checkout_session",
-            values
-        );
+        // const checkoutSessionResponse = await fetchPostJSON(
+        //     "/api/checkout_session",
+        //     values
+        // );
 
-        if (checkoutSessionResponse.statusCode === 500) {
-            console.error(checkoutSessionResponse.message);
-            return;
-        }
+        // if (checkoutSessionResponse.statusCode === 500) {
+        //     console.error(checkoutSessionResponse.message);
+        //     return;
+        // }
 
-        const file = values.companyLogoFileList[0];
+        // const file = values.companyLogoFileList[0];
 
-        const response = await fetch(
-            `/api/upload?filename=${checkoutSessionResponse.post_id}`,
-            {
-                method: "POST",
-                body: file,
-            }
-        );
+        // const response = await fetch(
+        //     `/api/upload?filename=${checkoutSessionResponse.post_id}`,
+        //     {
+        //         method: "POST",
+        //         body: file,
+        //     }
+        // );
 
-        const responseBody = await response.json();
+        // const responseBody = await response.json();
 
-        const createJobRequest: CreateJobRequest = {
-            amount: totalAmount,
-            values,
-            companyLogoUrl: responseBody.url,
-            checkoutSessionId: checkoutSessionResponse.session.id,
-            id: checkoutSessionResponse.post_id,
-            status: "pending",
-        };
-        const createJobResponse = await fetchPostJSON(
-            "/api/createJob",
-            createJobRequest
-        );
+        // const createJobRequest: CreateJobRequest = {
+        //     amount: totalAmount,
+        //     values,
+        //     companyLogoUrl: responseBody.url,
+        //     checkoutSessionId: checkoutSessionResponse.session.id,
+        //     id: checkoutSessionResponse.post_id,
+        //     status: "pending",
+        // };
+        // const createJobResponse = await fetchPostJSON(
+        //     "/api/createJob",
+        //     createJobRequest
+        // );
 
-        if (createJobResponse.statusCode === 500) {
-            console.error(createJobResponse.message);
-            return;
-        }
+        // if (createJobResponse.statusCode === 500) {
+        //     console.error(createJobResponse.message);
+        //     return;
+        // }
 
-        // Redirect to Checkout.
-        const stripe = await getStripe();
-        const { error } = await stripe!.redirectToCheckout({
-            // Make the id field from the Checkout Session creation API response
-            // available to this file, so you can provide it as parameter here
-            // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
-            sessionId: checkoutSessionResponse.session.id,
-        });
+        // // Redirect to Checkout.
+        // const stripe = await getStripe();
+        // const { error } = await stripe!.redirectToCheckout({
+        //     // Make the id field from the Checkout Session creation API response
+        //     // available to this file, so you can provide it as parameter here
+        //     // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
+        //     sessionId: checkoutSessionResponse.session.id,
+        // });
         // If `redirectToCheckout` fails due to a browser or network
         // error, display the localized error message to your customer
         // using `error.message`.
-        console.warn(error.message);
+        // console.warn(error.message);
     }
 
     const validateFiles = (value: FileList) => {

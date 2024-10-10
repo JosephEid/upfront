@@ -44,13 +44,13 @@ export default function Home({ jobs }: { jobs: JobPostProps[] }) {
                 </Text>
                 <JobSearch />
                 <Box my="1rem">
-                    {jobs.map((x, i) => {
+                    {/* {jobs.map((x, i) => {
                         return (
                             <Box my="1rem" key={i}>
                                 <JobPost {...x} />
                             </Box>
                         );
-                    })}
+                    })} */}
                 </Box>
             </Layout>
         </>

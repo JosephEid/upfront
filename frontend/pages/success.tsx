@@ -3,19 +3,18 @@ import { Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
 import useSWR from "swr";
 import { useRouter } from "next/router";
-import { fetchGetJSON } from "@/utils/api-helpers";
 import { JobPost, JobPostProps } from "@/components/JobPost";
 
 export default function Success() {
     const router = useRouter();
-    const { data, error } = useSWR(
-        router.query.session_id
-            ? `/api/checkout_sessions/${router.query.session_id}`
-            : null,
-        fetchGetJSON
-    );
+    // const { data, error } = useSWR(
+    //     router.query.session_id
+    //         ? `/api/checkout_sessions/${router.query.session_id}`
+    //         : null,
+    //     fetchGetJSON
+    // );
 
-    if (error) return <div>failed to load</div>;
+    // if (error) return <div>failed to load</div>;
 
     return (
         <>
@@ -53,7 +52,7 @@ export default function Success() {
                         provided.
                     </Text>
                 </Text>
-                {data ? <JobPost {...(data as JobPostProps)} /> : "loading..."}
+                {/* {data ? <JobPost {...(data as JobPostProps)} /> : "loading..."} */}
             </Layout>
         </>
     );

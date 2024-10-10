@@ -78,7 +78,7 @@ export default function PostJob() {
         const totalAmount =
             (values.planDuration * priceFactors[values.planType]) / 30;
         const checkoutSessionResponse = await fetchPostJSON(
-            "/api/checkout_sessions",
+            "/api/checkout_session",
             values
         );
 

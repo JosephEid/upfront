@@ -59,6 +59,31 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	createCheckoutSessionPostIntegration := awsapigateway.NewLambdaIntegration(createCheckoutSession, apiLambdaOpts)
 	upfront.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{})
 
+	// Next.js
+	// Session table
+	sessionTable := awsdynamodb.NewTableV2(stack, jsii.String("sessionTable"), &awsdynamodb.TablePropsV2{
+		TableName: jsii.String("lucia-sessions"),
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("id"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		Billing: awsdynamodb.Billing_Provisioned(&awsdynamodb.ThroughputProps{
+			ReadCapacity:  awsdynamodb.Capacity_Fixed(jsii.Number(1)),
+			WriteCapacity: awsdynamodb.Capacity_Autoscaled(&awsdynamodb.AutoscaledCapacityOptions{MaxCapacity: jsii.Number(1)}),
+		}),
+		TimeToLiveAttribute: jsii.String("ttl"),
+	})
+
+	sessionTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
+		IndexName: jsii.String("lucia-sessions-user-index"),
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("userId"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		ReadCapacity:  awsdynamodb.Capacity_Fixed(jsii.Number(1)),
+		WriteCapacity: awsdynamodb.Capacity_Autoscaled(&awsdynamodb.AutoscaledCapacityOptions{MaxCapacity: jsii.Number(1)}),
+	})
+
 	return stack
 }
 

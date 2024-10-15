@@ -37,7 +37,6 @@ function formatNumberWithCommas(number: number): string {
 
 export interface JobPostProps extends JobPostFormProps {
     id?: string;
-    companyLogo?: string;
     paymentIntendId?: string;
     checkoutSessionId?: string;
     createdAt?: string;
@@ -46,7 +45,6 @@ export interface JobPostProps extends JobPostFormProps {
 
 export interface JobPostRecord extends JobPostFormProps {
     id?: string;
-    companyLogo?: string;
     paymentIntendId?: string;
     checkoutSessionId?: string;
     createdAt?: Date;
@@ -54,8 +52,7 @@ export interface JobPostRecord extends JobPostFormProps {
 }
 
 export const JobPost = ({
-    companyLogo,
-    companyLogoFileList,
+    companyLogoURL,
     companyName,
     companyWebsite,
     currency,
@@ -69,16 +66,6 @@ export const JobPost = ({
     loginEmail,
 }: JobPostProps) => {
     const currencySymbol = getCurrencySymbol(currency);
-    const [preUploadFile, setPreUploadFile] = useState("");
-    useEffect(() => {
-        if (!companyLogoFileList || companyLogoFileList.length !== 1) return;
-        let reader = new FileReader();
-        reader.onload = function (e) {
-            setPreUploadFile(e.target?.result as string);
-        };
-        reader.readAsDataURL(companyLogoFileList[0]);
-    });
-
     return (
         <Box
             border={"1px solid"}
@@ -91,29 +78,20 @@ export const JobPost = ({
             <HStack gap={{ base: "0.5rem", md: "1rem" }}>
                 <Box
                     borderRadius="5px"
-                    minWidth={{ base: "50px", md: "100px" }}
+                    width={{ base: "50px", md: "100px" }}
                     height={{ base: "50px", md: "100px" }}
                 >
-                    {preUploadFile ? (
-                        <Image
-                            src={preUploadFile}
-                            alt="Company logo"
-                            minWidth={{ base: "50px", md: "100px" }}
-                            height={{ base: "50px", md: "100px" }}
-                            borderRadius={"5px"}
-                        />
-                    ) : (
-                        <Image
-                            src={
-                                companyLogo ??
-                                "/upfront/svg/logo-color-small.svg"
-                            }
-                            alt="Company logo"
-                            minWidth={{ base: "50px", md: "100px" }}
-                            height={{ base: "50px", md: "100px" }}
-                            borderRadius={"5px"}
-                        />
-                    )}
+                    <Image
+                        src={
+                            companyLogoURL === ""
+                                ? "/upfront/svg/logo-color-small.svg"
+                                : companyLogoURL
+                        }
+                        alt="Company logo"
+                        width={{ base: "50px", md: "100px" }}
+                        height={{ base: "50px", md: "100px" }}
+                        borderRadius={"5px"}
+                    />
                 </Box>
 
                 <Stack alignItems={"left"} direction={["column", "row"]}>

@@ -36,6 +36,7 @@ require (
 	github.com/aws/jsii-runtime-go v1.103.1 // indirect
 	github.com/aws/smithy-go v1.22.0 // indirect
 	github.com/fatih/color v1.17.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect

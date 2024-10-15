@@ -56,8 +56,9 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		Proxy:          jsii.Bool(false),
 	})
 	upfront := api.Root().AddResource(jsii.String("upfront"), apiResourceOpts)
+	checkoutSession := upfront.AddResource(jsii.String("checkout-session"), apiResourceOpts)
 	createCheckoutSessionPostIntegration := awsapigateway.NewLambdaIntegration(createCheckoutSession, apiLambdaOpts)
-	upfront.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{})
+	checkoutSession.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{})
 
 	// Next.js
 	// Session table

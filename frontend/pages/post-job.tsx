@@ -8,7 +8,9 @@ import {
     FormControl,
     FormErrorMessage,
     FormLabel,
+    HStack,
     Icon,
+    Image,
     Input,
     InputGroup,
     Select,
@@ -17,7 +19,6 @@ import {
     useRadio,
     useRadioGroup,
 } from "@chakra-ui/react";
-import { FaUpload } from "react-icons/fa";
 
 const SimpleMdeReact = dynamic(() => import("react-simplemde-editor"), {
     ssr: false,
@@ -32,9 +33,11 @@ import {
     useForm,
     UseFormRegisterReturn,
 } from "react-hook-form";
-import { CreateJobRequest } from "./api/createJob";
 import { Currency, JobPost } from "@/components/JobPost";
 import { priceFactors } from "@/config";
+import { fetchPostJSON } from "@/lib/api-utils";
+import { CheckoutSessionResponse } from "./api/checkout_session";
+import { redirect } from "next/navigation";
 
 export type PlanType = "Standard" | "Premium";
 export type JobPostStatus = "pending" | "active" | "inactive";
@@ -45,15 +48,15 @@ export default function PostJob() {
     }, []);
 
     const defaultValues: JobPostFormProps = {
-        companyLogoFileList: undefined,
+        companyLogoURL: "",
         companyName: "",
         companyWebsite: "",
         currency: "GBP",
         howToApply: "",
         location: "",
         description: "",
-        maxSalary: undefined,
-        minSalary: undefined,
+        maxSalary: 10000,
+        minSalary: 5000,
         title: "",
         visaSponsorship: false,
         loginEmail: "",
@@ -72,76 +75,11 @@ export default function PostJob() {
     } = useForm({ defaultValues: defaultValues });
 
     async function onSubmit(values: JobPostFormProps) {
-        // Create a Checkout Session.
-        const totalAmount =
-            (values.planDuration * priceFactors[values.planType]) / 30;
-        // const checkoutSessionResponse = await fetchPostJSON(
-        //     "/api/checkout_session",
-        //     values
-        // );
+        const checkoutSessionResponse: CheckoutSessionResponse =
+            await fetchPostJSON("/api/checkout_session", values);
 
-        // if (checkoutSessionResponse.statusCode === 500) {
-        //     console.error(checkoutSessionResponse.message);
-        //     return;
-        // }
-
-        // const file = values.companyLogoFileList[0];
-
-        // const response = await fetch(
-        //     `/api/upload?filename=${checkoutSessionResponse.post_id}`,
-        //     {
-        //         method: "POST",
-        //         body: file,
-        //     }
-        // );
-
-        // const responseBody = await response.json();
-
-        // const createJobRequest: CreateJobRequest = {
-        //     amount: totalAmount,
-        //     values,
-        //     companyLogoUrl: responseBody.url,
-        //     checkoutSessionId: checkoutSessionResponse.session.id,
-        //     id: checkoutSessionResponse.post_id,
-        //     status: "pending",
-        // };
-        // const createJobResponse = await fetchPostJSON(
-        //     "/api/createJob",
-        //     createJobRequest
-        // );
-
-        // if (createJobResponse.statusCode === 500) {
-        //     console.error(createJobResponse.message);
-        //     return;
-        // }
-
-        // // Redirect to Checkout.
-        // const stripe = await getStripe();
-        // const { error } = await stripe!.redirectToCheckout({
-        //     // Make the id field from the Checkout Session creation API response
-        //     // available to this file, so you can provide it as parameter here
-        //     // instead of the {{CHECKOUT_SESSION_ID}} placeholder.
-        //     sessionId: checkoutSessionResponse.session.id,
-        // });
-        // If `redirectToCheckout` fails due to a browser or network
-        // error, display the localized error message to your customer
-        // using `error.message`.
-        // console.warn(error.message);
+        window.location.href = checkoutSessionResponse.url;
     }
-
-    const validateFiles = (value: FileList) => {
-        if (value.length < 1) {
-            return "Files is required";
-        }
-        for (const file of Array.from(value)) {
-            const fsMb = file.size / (1024 * 1024);
-            const MAX_FILE_SIZE = 10;
-            if (fsMb > MAX_FILE_SIZE) {
-                return "Max file size 10mb";
-            }
-        }
-        return true;
-    };
 
     const formValues = watch() as JobPostFormProps;
 
@@ -257,7 +195,7 @@ export default function PostJob() {
                             gap={{ base: 0, md: "0.5rem" }}
                         >
                             <FormControl
-                                width={{ base: "100%", md: "45%" }}
+                                width={{ base: "100%", md: "40%" }}
                                 isInvalid={errors.minSalary !== undefined}
                                 mb={"1rem"}
                             >
@@ -271,6 +209,7 @@ export default function PostJob() {
                                     id="minSalary"
                                     {...register("minSalary", {
                                         required: "This is required",
+                                        valueAsNumber: true,
                                     })}
                                 />
                                 <FormErrorMessage>
@@ -278,7 +217,7 @@ export default function PostJob() {
                                 </FormErrorMessage>
                             </FormControl>
                             <FormControl
-                                width={{ base: "100%", md: "45%" }}
+                                width={{ base: "100%", md: "40%" }}
                                 isInvalid={errors.maxSalary !== undefined}
                                 mb={"1rem"}
                             >
@@ -292,6 +231,7 @@ export default function PostJob() {
                                     id="maxSalary"
                                     {...register("maxSalary", {
                                         required: "This is required",
+                                        valueAsNumber: true,
                                     })}
                                 />
                                 <FormErrorMessage>
@@ -299,7 +239,7 @@ export default function PostJob() {
                                 </FormErrorMessage>
                             </FormControl>
                             <FormControl
-                                width={{ base: "100%", md: "10%" }}
+                                width={{ base: "100%", md: "20%" }}
                                 isInvalid={errors.currency !== undefined}
                                 mb={"1rem"}
                             >
@@ -393,38 +333,61 @@ export default function PostJob() {
                                 </FormErrorMessage>
                             </FormControl>
                         </Stack>
-                        <Stack
-                            direction={["column", "row"]}
-                            width={"100%"}
-                            gap={{ base: 0, md: "0.5rem" }}
+                        <FormControl
+                            isInvalid={errors.companyLogoURL !== undefined}
+                            mb={"1rem"}
                         >
-                            <FormControl
-                                isInvalid={
-                                    errors.companyLogoFileList !== undefined
-                                }
-                                mb={"1rem"}
-                            >
-                                <FormLabel
-                                    htmlFor="companyLogoFileList"
-                                    display={"none"}
-                                >
-                                    Company Logo
-                                </FormLabel>
-                                <FileUpload
-                                    accept={"image/*"}
-                                    register={register("companyLogoFileList", {
-                                        validate: validateFiles,
+                            <FormLabel htmlFor="companyLogoURL" display="none">
+                                Company Logo URL
+                            </FormLabel>
+                            <HStack>
+                                <Input
+                                    size={"lg"}
+                                    id="companyLogoURL"
+                                    {...register("companyLogoURL", {
+                                        minLength: {
+                                            value: 2,
+                                            message:
+                                                "Minimum length should be 2",
+                                        },
                                     })}
+                                    type="url"
+                                    placeholder="Company Logo URL"
+                                    width={{ base: "100%", md: "50%" }}
+                                />
+                                <Box
+                                    borderRadius="5px"
+                                    borderWidth={"1px"}
+                                    borderColor={""}
+                                    minWidth={{ base: "50px", md: "100px" }}
+                                    minHeight={{ base: "50px", md: "100px" }}
+                                    maxWidth={{ base: "50px", md: "100px" }}
+                                    maxHeight={{ base: "50px", md: "100px" }}
                                 >
-                                    <Button leftIcon={<Icon as={FaUpload} />}>
-                                        Upload Logo
-                                    </Button>
-                                </FileUpload>
-                                <FormErrorMessage>
-                                    {errors.companyLogoFileList?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                        </Stack>
+                                    {formValues.companyLogoURL === "" ? (
+                                        <Text>Logo Preview</Text>
+                                    ) : (
+                                        <Image
+                                            src={formValues.companyLogoURL}
+                                            alt="Company logo"
+                                            minWidth={{
+                                                base: "50px",
+                                                md: "100px",
+                                            }}
+                                            minHeight={{
+                                                base: "50px",
+                                                md: "100px",
+                                            }}
+                                            borderRadius={"5px"}
+                                        />
+                                    )}
+                                </Box>
+                            </HStack>
+
+                            <FormErrorMessage>
+                                {errors.companyLogoURL?.message?.toString()}
+                            </FormErrorMessage>
+                        </FormControl>
 
                         <FormControl
                             isInvalid={errors.description !== undefined}
@@ -595,39 +558,6 @@ export default function PostJob() {
     );
 }
 
-type FileUploadProps = {
-    register: UseFormRegisterReturn;
-    accept?: string;
-    multiple?: boolean;
-    children?: ReactNode;
-};
-
-const FileUpload = (props: FileUploadProps) => {
-    const { register, accept, children } = props;
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const { ref, ...rest } = register as {
-        ref: (instance: HTMLInputElement | null) => void;
-    };
-
-    const handleClick = () => inputRef.current?.click();
-
-    return (
-        <InputGroup onClick={handleClick}>
-            <input
-                type={"file"}
-                hidden
-                accept={accept}
-                {...rest}
-                ref={(e) => {
-                    ref(e);
-                    inputRef.current = e;
-                }}
-            />
-            <>{children}</>
-        </InputGroup>
-    );
-};
-
 const PlanTypes: FC<{
     control: Control<JobPostFormProps, any>;
     duration: number;
@@ -720,15 +650,15 @@ const RadioCard: FC<any> = (props) => {
 };
 
 export interface JobPostFormProps {
-    companyLogoFileList?: any;
+    companyLogoURL: string;
     companyName: string;
     companyWebsite: string;
     currency: Currency;
     description: string;
     howToApply: string;
     location: string;
-    maxSalary?: number;
-    minSalary?: number;
+    maxSalary: number;
+    minSalary: number;
     title: string;
     visaSponsorship: false;
     loginEmail: string;

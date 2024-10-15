@@ -2,9 +2,11 @@ package createcheckoutsession
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/josepheid/upfront/internal/respond"
 	"github.com/stripe/stripe-go/v80"
 	"github.com/stripe/stripe-go/v80/checkout/session"
@@ -22,6 +24,46 @@ type CheckoutSessionRequest struct {
 	ProductName string `json:"productName"`
 }
 
+type Currency string
+
+const (
+	GBP Currency = "GBP"
+	USD Currency = "USD"
+	EUR Currency = "EUR"
+	AUD Currency = "AUD"
+	CAD Currency = "CAD"
+	SGD Currency = "SGD"
+	CHF Currency = "CHF"
+	INR Currency = "INR"
+	JPY Currency = "JPY"
+)
+
+type PlanType string
+
+const (
+	Standard PlanType = "Standard"
+	Premium  PlanType = "Premium"
+)
+
+type JobPostFormProps struct {
+	CompanyLogoURL  *string  `json:"companyLogoURL,omitempty"`
+	CompanyName     string   `json:"companyName"`
+	CompanyWebsite  string   `json:"companyWebsite"`
+	Currency        Currency `json:"currency"`
+	Description     string   `json:"description"`
+	HowToApply      string   `json:"howToApply"`
+	Location        string   `json:"location"`
+	MaxSalary       int      `json:"maxSalary"`
+	MinSalary       int      `json:"minSalary"`
+	Title           string   `json:"title"`
+	VisaSponsorship bool     `json:"visaSponsorship"`
+	LoginEmail      string   `json:"loginEmail"`
+	PlanDuration    int      `json:"planDuration"`
+	PlanType        PlanType `json:"planType"`
+	SuccessURL      string   `json:"successURL"`
+	CancelURL       string   `json:"cancelURL"`
+}
+
 type CheckoutSessionResponse struct {
 	URL string `json:"url"`
 }
@@ -33,8 +75,13 @@ func NewHandler(logger *slog.Logger, stripeKey string) (Handler, error) {
 	}, nil
 }
 
+var priceFactors = map[PlanType]int{
+	Standard: 35,
+	Premium:  90,
+}
+
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var request CheckoutSessionRequest
+	var request JobPostFormProps
 	err := json.NewDecoder(r.Body).Decode(&request)
 
 	h.logger.Info("Incoming request", "requestBody", request)
@@ -46,10 +93,12 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	stripe.Key = h.stripeKey
 
+	totalAmount := ((request.PlanDuration * priceFactors[request.PlanType]) / 30) * 100
+
 	priceParams := &stripe.PriceParams{
 		Currency:    stripe.String(string(stripe.CurrencyGBP)),
-		UnitAmount:  stripe.Int64(request.Amount),
-		ProductData: &stripe.PriceProductDataParams{Name: stripe.String(request.ProductName)},
+		UnitAmount:  stripe.Int64(int64(totalAmount)),
+		ProductData: &stripe.PriceProductDataParams{Name: stripe.String(fmt.Sprintf("%s plan for %d days.", request.PlanType, request.PlanDuration))},
 	}
 	priceResult, err := price.New(priceParams)
 	if err != nil {
@@ -58,8 +107,13 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	jobID := uuid.New()
+
 	checkoutSessionParams := &stripe.CheckoutSessionParams{
-		SuccessURL: stripe.String(request.SuccessURL),
+		ClientReferenceID: stripe.String(jobID.String()),
+		SuccessURL:        stripe.String(request.SuccessURL),
+		CancelURL:         stripe.String(request.CancelURL),
+		CustomerEmail:     stripe.String(request.LoginEmail),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				Price:    stripe.String(priceResult.ID),

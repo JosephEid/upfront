@@ -47,7 +47,15 @@ func main() {
 	}
 	secret := secretKeyValuePair["STRIPE_SECRET_KEY"]
 
-	h, err := createcheckoutsession.NewHandler(logger, secret)
+	upfrontTableName := os.Getenv("UPFRONT_TABLE_NAME")
+
+	// If the environment variable is not set
+	if upfrontTableName == "" {
+		logger.Error("environment variable MY_ENV_VAR is not set", "error", err)
+		os.Exit(1)
+	}
+
+	h, err := createcheckoutsession.NewHandler(logger, secret, upfrontTableName)
 	if err != nil {
 		logger.Error("could not create handler", slog.Any("error", err))
 		os.Exit(1)

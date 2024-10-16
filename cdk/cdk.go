@@ -25,17 +25,27 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
 	// Upfront Table
-	awsdynamodb.NewTableV2(stack, jsii.String("Table"), &awsdynamodb.TablePropsV2{
+	upfrontTable := awsdynamodb.NewTableV2(stack, jsii.String("Table"), &awsdynamodb.TablePropsV2{
 		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("pk"),
+			Name: jsii.String("PK"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		SortKey: &awsdynamodb.Attribute{
+			Name: jsii.String("SK"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
 	})
 
-	notFound := golambda.NewGoFunction(stack, jsii.String("notFound"), &golambda.GoFunctionProps{
-		Description: jsii.String("Returns a not found response."),
-		Entry:       jsii.String("../backend/api/handlers/notfound"),
-		MemorySize:  jsii.Number(128),
+	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
+		IndexName: jsii.String("gsi1"),
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("SK"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		SortKey: &awsdynamodb.Attribute{
+			Name: jsii.String("PK"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
 	})
 
 	createCheckoutSession := golambda.NewGoFunction(stack, jsii.String("createCheckoutSession"), &golambda.GoFunctionProps{
@@ -47,7 +57,19 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 				Resources: jsii.Strings("*"),
 			}),
 		},
+		Environment: &map[string]*string{
+			"UPFRONT_TABLE_NAME": upfrontTable.TableName(),
+		},
 	})
+
+	upfrontTable.GrantFullAccess(createCheckoutSession)
+
+	notFound := golambda.NewGoFunction(stack, jsii.String("notFound"), &golambda.GoFunctionProps{
+		Description: jsii.String("Returns a not found response."),
+		Entry:       jsii.String("../backend/api/handlers/notfound"),
+		MemorySize:  jsii.Number(128),
+	})
+
 	apiResourceOpts := &awsapigateway.ResourceOptions{}
 	apiLambdaOpts := &awsapigateway.LambdaIntegrationOptions{}
 	api := awsapigateway.NewLambdaRestApi(stack, jsii.String("upfront-api"), &awsapigateway.LambdaRestApiProps{

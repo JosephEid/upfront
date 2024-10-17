@@ -1,30 +1,35 @@
+import { fetchGetJSON } from "@/lib/api-utils";
+import { JobPostFormProps } from "@/pages/post-job";
 import { NextApiRequest, NextApiResponse } from "next";
 
-import Stripe from "stripe";
+export interface JobPostItem extends JobPostFormProps {
+    PK: string;
+    SK: string;
+    jobID: string;
+    sessionID: string;
+    createdAt: string;
+    updatedAt: string;
+    status: Status;
+}
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    // https://github.com/stripe/stripe-node#configuration
-    apiVersion: "2024-06-20",
-});
+type Status = "Active" | "Expired" | "PendingPayment";
 
 // get checkout session to validate payment
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
-    // const id: string = req.query.id as string;
-    // try {
-    //     if (!id.startsWith("cs_")) {
-    //         throw Error("Incorrect CheckoutSession ID.");
-    //     }
-    //     const checkout_session: Stripe.Checkout.Session =
-    //         await stripe.checkout.sessions.retrieve(id, {
-    //             expand: ["payment_intent"],
-    //         });
-    //     res.status(200).json(update.rows[0]);
-    // } catch (err) {
-    //     const errorMessage =
-    //         err instanceof Error ? err.message : "Internal server error";
-    //     res.status(500).json({ statusCode: 500, message: errorMessage });
-    // }
+    const id: string = req.query.id as string;
+    try {
+        const url = `https://jzyzxd9rfi.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
+        console.log(url);
+        const validateSessionResponse: JobPostItem = await fetchGetJSON(url);
+        console.log(validateSessionResponse);
+
+        res.status(200).json(validateSessionResponse);
+    } catch (err) {
+        const errorMessage =
+            err instanceof Error ? err.message : "Internal server error";
+        res.status(500).json({ statusCode: 500, message: errorMessage });
+    }
 }

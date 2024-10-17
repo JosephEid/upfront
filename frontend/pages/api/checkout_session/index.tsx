@@ -1,19 +1,6 @@
-import {
-    CURRENCY,
-    MAX_AMOUNT,
-    MIN_AMOUNT,
-    priceFactors,
-} from "../../../config";
 import { NextApiRequest, NextApiResponse } from "next";
-import Stripe from "stripe";
-import { v4 as uuidv4 } from "uuid";
 import { JobPostFormProps } from "@/pages/post-job";
 import { fetchPostJSON } from "@/lib/api-utils";
-import { redirect } from "next/navigation";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2024-06-20",
-});
 
 export interface CheckoutSessionRequest extends JobPostFormProps {
     successURL: string;
@@ -22,10 +9,6 @@ export interface CheckoutSessionRequest extends JobPostFormProps {
 
 export interface CheckoutSessionResponse {
     url: string;
-}
-
-function generateUUID(): string {
-    return uuidv4();
 }
 
 export default async function handler(
@@ -37,7 +20,7 @@ export default async function handler(
             const formProps: JobPostFormProps = req.body;
             const csRequest: CheckoutSessionRequest = {
                 ...formProps,
-                successURL: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+                successURL: `${req.headers.origin}/success`,
                 cancelURL: `${req.headers.origin}/post-job`,
             };
             const url = `https://jzyzxd9rfi.execute-api.eu-west-2.amazonaws.com/prod/upfront/checkout-session`;

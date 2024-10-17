@@ -62,7 +62,22 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		},
 	})
 
+	validatePurchase := golambda.NewGoFunction(stack, jsii.String("validatePurchase"), &golambda.GoFunctionProps{
+		Entry:       jsii.String("../backend/api/handlers/validatepurchase/get"),
+		Description: jsii.String("lambda responsible for validate that the customer has paid"),
+		InitialPolicy: &[]awsiam.PolicyStatement{
+			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+				Actions:   jsii.Strings("secretsmanager:GetSecretValue"),
+				Resources: jsii.Strings("*"),
+			}),
+		},
+		Environment: &map[string]*string{
+			"UPFRONT_TABLE_NAME": upfrontTable.TableName(),
+		},
+	})
+
 	upfrontTable.GrantFullAccess(createCheckoutSession)
+	upfrontTable.GrantFullAccess(validatePurchase)
 
 	notFound := golambda.NewGoFunction(stack, jsii.String("notFound"), &golambda.GoFunctionProps{
 		Description: jsii.String("Returns a not found response."),
@@ -81,6 +96,11 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	checkoutSession := upfront.AddResource(jsii.String("checkout-session"), apiResourceOpts)
 	createCheckoutSessionPostIntegration := awsapigateway.NewLambdaIntegration(createCheckoutSession, apiLambdaOpts)
 	checkoutSession.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{})
+
+	validatePurchaseId := upfront.AddResource(jsii.String("validate-purchase"), apiResourceOpts)
+	validatePurchaseWithId := validatePurchaseId.AddResource(jsii.String("{id}"), apiResourceOpts)
+	validatePurchaseGetIntegration := awsapigateway.NewLambdaIntegration(validatePurchase, apiLambdaOpts)
+	validatePurchaseWithId.AddMethod(jsii.String(http.MethodGet), validatePurchaseGetIntegration, &awsapigateway.MethodOptions{})
 
 	// Next.js
 	// Session table

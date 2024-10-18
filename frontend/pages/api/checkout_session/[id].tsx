@@ -21,10 +21,8 @@ export default async function handler(
 ) {
     const id: string = req.query.id as string;
     try {
-        const url = `https://jzyzxd9rfi.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
-        console.log(url);
+        const url = `https://pycl29s0vd.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
         const validateSessionResponse: JobPostItem = await fetchGetJSON(url);
-        console.log(validateSessionResponse);
 
         res.status(200).json(validateSessionResponse);
     } catch (err) {

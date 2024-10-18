@@ -122,7 +122,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sk, err := attributevalue.Marshal(models.FormatSK(item.LoginEmail))
+	sk, err := attributevalue.Marshal(item.CreatedAt)
 	if err != nil {
 		h.logger.Error("error marshalling SK", "error", err)
 		respond.WithError(w, "error marshalling SK", http.StatusInternalServerError)

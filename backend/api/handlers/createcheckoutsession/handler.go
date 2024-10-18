@@ -104,7 +104,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	jobPostItem := models.JobPostItem{
 		JobPostFormProps: request,
 		PK:               models.FormatPK(jobID.String()),
-		SK:               models.FormatSK(request.LoginEmail),
+		SK:               createdAt.Format(time.RFC3339),
 		JobID:            jobID.String(),
 		SessionID:        checkoutSessionResult.ID,
 		CreatedAt:        createdAt.Format(time.RFC3339),

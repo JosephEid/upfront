@@ -37,15 +37,32 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	})
 
 	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
-		IndexName: jsii.String("gsi1"),
+		IndexName: jsii.String("emailIndex"),
 		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("SK"),
+			Name: jsii.String("loginEmail"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
 		SortKey: &awsdynamodb.Attribute{
 			Name: jsii.String("PK"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
+		ProjectionType: awsdynamodb.ProjectionType_INCLUDE,
+		NonKeyAttributes: &[]*string{
+			jsii.String("createdAt"),
+		},
+	})
+
+	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
+		IndexName: jsii.String("allJobsIndex"),
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("allJobs"), // A constant string, e.g., "ALL_JOBS"
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		SortKey: &awsdynamodb.Attribute{
+			Name: jsii.String("createdAt"), // Sort by createdAt datetime
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		ProjectionType: awsdynamodb.ProjectionType_ALL, // Or specify keys you need with INCLUDE
 	})
 
 	createCheckoutSession := golambda.NewGoFunction(stack, jsii.String("createCheckoutSession"), &golambda.GoFunctionProps{
@@ -101,31 +118,6 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	validatePurchaseWithId := validatePurchaseId.AddResource(jsii.String("{id}"), apiResourceOpts)
 	validatePurchaseGetIntegration := awsapigateway.NewLambdaIntegration(validatePurchase, apiLambdaOpts)
 	validatePurchaseWithId.AddMethod(jsii.String(http.MethodGet), validatePurchaseGetIntegration, &awsapigateway.MethodOptions{})
-
-	// Next.js
-	// Session table
-	sessionTable := awsdynamodb.NewTableV2(stack, jsii.String("sessionTable"), &awsdynamodb.TablePropsV2{
-		TableName: jsii.String("lucia-sessions"),
-		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("id"),
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		Billing: awsdynamodb.Billing_Provisioned(&awsdynamodb.ThroughputProps{
-			ReadCapacity:  awsdynamodb.Capacity_Fixed(jsii.Number(1)),
-			WriteCapacity: awsdynamodb.Capacity_Autoscaled(&awsdynamodb.AutoscaledCapacityOptions{MaxCapacity: jsii.Number(1)}),
-		}),
-		TimeToLiveAttribute: jsii.String("ttl"),
-	})
-
-	sessionTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
-		IndexName: jsii.String("lucia-sessions-user-index"),
-		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("userId"),
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		ReadCapacity:  awsdynamodb.Capacity_Fixed(jsii.Number(1)),
-		WriteCapacity: awsdynamodb.Capacity_Autoscaled(&awsdynamodb.AutoscaledCapacityOptions{MaxCapacity: jsii.Number(1)}),
-	})
 
 	return stack
 }

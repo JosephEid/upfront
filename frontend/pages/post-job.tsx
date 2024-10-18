@@ -439,9 +439,9 @@ export default function PostJob() {
                             </FormLabel>
                             <Input
                                 size="lg"
-                                type="url"
+                                type="text"
                                 id="howToApply"
-                                placeholder="How to apply (Email or URL)"
+                                placeholder="How to apply (URL)"
                                 {...register("howToApply", {
                                     required: "This is required",
                                     minLength: {

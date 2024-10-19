@@ -19,7 +19,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             >
                 <Navbar />
                 <Container
-                    maxWidth={{ base: "100%", md: "90%", lg: "70%" }}
+                    maxWidth={{ base: "100%", md: "90%", lg: "80%" }}
                     px={{ base: 0, md: "1rem" }}
                 >
                     {children}

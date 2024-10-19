@@ -9,10 +9,8 @@ import {
     FormErrorMessage,
     FormLabel,
     HStack,
-    Icon,
     Image,
     Input,
-    InputGroup,
     Select,
     Stack,
     Text,
@@ -27,17 +25,11 @@ import { FC, ReactNode, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import Layout from "@/components/Layout";
-import {
-    Control,
-    useController,
-    useForm,
-    UseFormRegisterReturn,
-} from "react-hook-form";
+import { Control, useController, useForm } from "react-hook-form";
 import { Currency, JobPost } from "@/components/JobPost";
 import { priceFactors } from "@/config";
 import { fetchPostJSON } from "@/lib/api-utils";
 import { CheckoutSessionResponse } from "./api/checkout_session";
-import { redirect } from "next/navigation";
 
 export type PlanType = "Standard" | "Premium";
 export type JobPostStatus = "pending" | "active" | "inactive";
@@ -83,6 +75,7 @@ export default function PostJob() {
 
     const formValues = watch() as JobPostFormProps;
 
+    console.log(formValues);
     return (
         <>
             <Head>
@@ -514,6 +507,7 @@ export default function PostJob() {
                                     width={{ base: "100%" }}
                                     {...register("planDuration", {
                                         required: "This is required",
+                                        valueAsNumber: true,
                                     })}
                                 >
                                     {[1, 2, 3, 4, 5, 6].map((x) => {

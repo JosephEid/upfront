@@ -95,13 +95,12 @@ export default function Navbar() {
                         Post a job
                     </Button>
                     <Button
-                        as={"a"}
                         display={{ base: "none", md: "inline-flex" }}
                         fontSize={"1rem"}
                         fontWeight={600}
                         color={"white"}
                         bg={"upfront.300"}
-                        href={"#"}
+                        onClick={() => router.push("/login")}
                         _hover={{
                             bg: "upfront.200",
                         }}
@@ -247,8 +246,9 @@ const MobileNav = ({ router }: { router: NextRouter }) => {
                     _hover={{
                         bg: "upfront.200",
                     }}
+                    onClick={() => router.push("/login")}
                 >
-                    Sign In
+                    Recruiter Log In
                 </Button>
             </Stack>
         </Stack>

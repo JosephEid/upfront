@@ -356,13 +356,11 @@ export default function PostJob() {
                                     width={{ base: "100%", md: "50%" }}
                                 />
                                 <Box
-                                    borderRadius="5px"
-                                    borderWidth={"1px"}
-                                    borderColor={""}
                                     minWidth={{ base: "50px", md: "100px" }}
                                     minHeight={{ base: "50px", md: "100px" }}
                                     maxWidth={{ base: "50px", md: "100px" }}
                                     maxHeight={{ base: "50px", md: "100px" }}
+                                    margin="1rem"
                                 >
                                     {formValues.companyLogoURL === "" ? (
                                         <Text>Logo Preview</Text>

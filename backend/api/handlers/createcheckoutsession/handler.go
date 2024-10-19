@@ -110,6 +110,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		CreatedAt:        createdAt.Format(time.RFC3339),
 		UpdatedAt:        updatedAt.Format(time.RFC3339),
 		Status:           models.PendingPayment,
+		AllJobs:          "ALL_JOBS",
 	}
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(), func(opts *config.LoadOptions) error {

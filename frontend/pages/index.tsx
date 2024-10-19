@@ -1,13 +1,15 @@
 import Head from "next/head";
 import { Box, Text } from "@chakra-ui/react";
 import JobSearch from "@/components/JobSearch";
-import { Abel } from "next/font/google";
 import Layout from "@/components/Layout";
 import { GetServerSideProps } from "next";
-import { JobPost, JobPostProps, JobPostRecord } from "@/components/JobPost";
-import React from "react";
+import { JobPost } from "@/components/JobPost";
+import React, { useState } from "react";
+import { JobPostItem } from "./api/checkout_session/[id]";
+import { getAllJobs } from "./api/all_jobs";
 
-export default function Home({ jobs }: { jobs: JobPostProps[] }) {
+export default function Home({ jobs }: { jobs: JobPostItem[] }) {
+    const [jobPosts, setJobPosts] = useState(jobs);
     return (
         <>
             <Head>
@@ -42,32 +44,27 @@ export default function Home({ jobs }: { jobs: JobPostProps[] }) {
                         provided.
                     </Text>
                 </Text>
-                <JobSearch />
+                <JobSearch setJobPosts={(x) => setJobPosts(x)} />
                 <Box my="1rem">
-                    {/* {jobs.map((x, i) => {
-                        return (
-                            <Box my="1rem" key={i}>
-                                <JobPost {...x} />
-                            </Box>
-                        );
-                    })} */}
+                    {jobPosts &&
+                        jobPosts?.map((x, i) => {
+                            return (
+                                <Box my="1rem" key={i}>
+                                    <JobPost {...x} />
+                                </Box>
+                            );
+                        })}
+                    {!jobPosts ||
+                        (jobPosts.length === 0 && (
+                            <Text>No Jobs found matching your criteria...</Text>
+                        ))}
                 </Box>
             </Layout>
         </>
     );
 }
 
-// export const getServerSideProps = (async () => {
-//     // Fetch data from external API
-//     const { rows } = await sql`SELECT * from job_posts WHERE status = 'active'`;
-//     const jobs: JobPostRecord[] = rows as JobPostRecord[];
-//     const cleanedJobs: JobPostProps[] = jobs.map((x: JobPostRecord) => {
-//         return {
-//             ...x,
-//             createdAt: x.createdAt?.toISOString(),
-//             updatedAt: x.updatedAt?.toISOString(),
-//         };
-//     });
-//     // Pass data to the page via props
-//     return { props: { jobs: cleanedJobs } };
-// }) satisfies GetServerSideProps<{ jobs: JobPostProps[] }>;
+export const getServerSideProps = (async (context) => {
+    const getAllJobsResponse: JobPostItem[] = await getAllJobs();
+    return { props: { jobs: getAllJobsResponse } };
+}) satisfies GetServerSideProps<{ jobs: JobPostItem[] }>;

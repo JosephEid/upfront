@@ -17,13 +17,21 @@ import locations from "./locations.json";
 import jobSkills from "./jobSkills.json";
 import { FaMapPin, FaSearch } from "react-icons/fa";
 import { useForm } from "react-hook-form";
+import getAllJobs from "@/pages/api/all_jobs";
+import { JobPostItem } from "@/pages/api/checkout_session/[id]";
+import { fetchGetJSON } from "@/lib/api-utils";
+import useSWR from "swr";
 
 interface Location {
     city: string;
     country: string;
 }
 
-export default function JobSearch() {
+interface JobSearchProps {
+    setJobPosts: React.Dispatch<React.SetStateAction<JobPostItem[]>>;
+}
+
+export default function JobSearch(props: JobSearchProps) {
     const [locationSuggestions, setLocationSuggestions] = useState<Location[]>(
         []
     );
@@ -82,13 +90,14 @@ export default function JobSearch() {
         setValue,
     } = useForm();
 
-    function onSubmit(values: any) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                alert(JSON.stringify(values, null, 2));
-                resolve(null);
-            }, 3000);
-        });
+    async function onSubmit(values: any) {
+        const jobsResponse: JobPostItem[] = await fetchGetJSON(
+            `/api/all_jobs?salary=${values.salary ?? ""}&location=${
+                values.location ?? ""
+            }&title=${values.title ?? ""}`
+        );
+
+        props.setJobPosts(jobsResponse);
     }
 
     return (
@@ -114,7 +123,6 @@ export default function JobSearch() {
                         <Input
                             id="criteria"
                             {...register("criteria", {
-                                required: "This is required",
                                 minLength: {
                                     value: 2,
                                     message: "Minimum length should be 2",
@@ -174,7 +182,6 @@ export default function JobSearch() {
                             placeholder="Location"
                             id="location"
                             {...register("location", {
-                                required: "This is required",
                                 minLength: {
                                     value: 2,
                                     message: "Minimum length should be 2",

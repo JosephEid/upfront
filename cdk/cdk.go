@@ -93,8 +93,17 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		},
 	})
 
+	getJobsPosts := golambda.NewGoFunction(stack, jsii.String("getJobPosts"), &golambda.GoFunctionProps{
+		Entry:       jsii.String("../backend/api/handlers/getjobposts/get"),
+		Description: jsii.String("lambda responsible for getting jobs"),
+		Environment: &map[string]*string{
+			"UPFRONT_TABLE_NAME": upfrontTable.TableName(),
+		},
+	})
+
 	upfrontTable.GrantFullAccess(createCheckoutSession)
 	upfrontTable.GrantFullAccess(validatePurchase)
+	upfrontTable.GrantFullAccess(getJobsPosts)
 
 	notFound := golambda.NewGoFunction(stack, jsii.String("notFound"), &golambda.GoFunctionProps{
 		Description: jsii.String("Returns a not found response."),
@@ -110,6 +119,7 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		Proxy:          jsii.Bool(false),
 	})
 	upfront := api.Root().AddResource(jsii.String("upfront"), apiResourceOpts)
+
 	checkoutSession := upfront.AddResource(jsii.String("checkout-session"), apiResourceOpts)
 	createCheckoutSessionPostIntegration := awsapigateway.NewLambdaIntegration(createCheckoutSession, apiLambdaOpts)
 	checkoutSession.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{})
@@ -118,6 +128,10 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	validatePurchaseWithId := validatePurchaseId.AddResource(jsii.String("{id}"), apiResourceOpts)
 	validatePurchaseGetIntegration := awsapigateway.NewLambdaIntegration(validatePurchase, apiLambdaOpts)
 	validatePurchaseWithId.AddMethod(jsii.String(http.MethodGet), validatePurchaseGetIntegration, &awsapigateway.MethodOptions{})
+
+	jobPosts := upfront.AddResource(jsii.String("job-posts"), apiResourceOpts)
+	jobPostsGetIntegration := awsapigateway.NewLambdaIntegration(getJobsPosts, apiLambdaOpts)
+	jobPosts.AddMethod(jsii.String(http.MethodGet), jobPostsGetIntegration, &awsapigateway.MethodOptions{})
 
 	return stack
 }

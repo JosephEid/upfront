@@ -106,7 +106,7 @@ export default function Navbar() {
                             bg: "upfront.200",
                         }}
                     >
-                        Sign In
+                        Recruiter Log In
                     </Button>
                 </Stack>
             </Flex>
@@ -324,12 +324,12 @@ const NAV_ITEMS: Array<NavItem> = [
         label: "Jobs",
         href: "/",
     },
-    {
-        label: "Salaries",
-        href: "#",
-    },
-    {
-        label: "Companies",
-        href: "#",
-    },
+    // {
+    //     label: "Salaries",
+    //     href: "#",
+    // },
+    // {
+    //     label: "Companies",
+    //     href: "#",
+    // },
 ];

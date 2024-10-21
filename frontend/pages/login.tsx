@@ -2,14 +2,13 @@ import Head from "next/head";
 import { Box, Button, Center, Divider, Input, Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
 import React, { useState } from "react";
-import { fetchPostJSON } from "@/lib/api-utils";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const submitClicked = () => {
-        fetchPostJSON("/api/start_challenge", {
-            email: email.toLocaleLowerCase(),
-        });
+        // fetchPostJSON("/api/start_challenge", {
+        //     email: email.toLocaleLowerCase(),
+        // });
     };
     return (
         <>

@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { JobPostFormProps } from "@/pages/post-job";
-import { fetchPostJSON } from "@/lib/api-utils";
 
 export interface CheckoutSessionRequest extends JobPostFormProps {
     successURL: string;
@@ -17,18 +16,32 @@ export default async function handler(
 ) {
     if (req.method === "POST") {
         try {
-            const formProps: JobPostFormProps = req.body;
+            const formProps: JobPostFormProps = JSON.parse(req.body);
             const csRequest: CheckoutSessionRequest = {
                 ...formProps,
                 successURL: `${req.headers.origin}/success`,
                 cancelURL: `${req.headers.origin}/post-job`,
             };
+            console.log(csRequest);
             const url = `https://pycl29s0vd.execute-api.eu-west-2.amazonaws.com/prod/upfront/checkout-session`;
 
-            const checkoutSessionResponse: CheckoutSessionResponse =
-                await fetchPostJSON(url, csRequest);
+            const checkoutSessionResponse = await fetch(url, {
+                method: "POST", // *GET, POST, PUT, DELETE, etc.
+                mode: "cors", // no-cors, *cors, same-origin
+                cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: "same-origin", // include, *same-origin, omit
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": process.env.NEXT_PUBLIC_API_KEY as string,
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: "follow", // manual, *follow, error
+                referrerPolicy: "no-referrer", // no-referrer, *client
+                body: JSON.stringify(csRequest || {}), // body data type must match "Content-Type" header
+            });
 
-            res.status(200).json(checkoutSessionResponse);
+            const data = await checkoutSessionResponse.json();
+            res.status(200).json(data);
         } catch (err) {
             const errorMessage =
                 err instanceof Error ? err.message : "Internal server error";

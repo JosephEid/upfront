@@ -4,17 +4,10 @@ import Layout from "@/components/Layout";
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import { JobPost, JobPostProps } from "@/components/JobPost";
-import { fetchGetJSON } from "@/lib/api-utils";
+import { GetServerSideProps } from "next";
+import { getCheckoutSession } from "./api/checkout_session/[id]";
 
-export default function Success() {
-    const router = useRouter();
-    const { data, error } = useSWR(
-        router.query.id ? `/api/checkout_session/${router.query.id}` : null,
-        fetchGetJSON
-    );
-
-    if (error) return <div>failed to load</div>;
-
+export default function Success({ jobPost }: { jobPost: JobPostProps }) {
     return (
         <>
             <Head>
@@ -51,8 +44,15 @@ export default function Success() {
                         provided.
                     </Text>
                 </Text>
-                {data ? <JobPost {...(data as JobPostProps)} /> : "loading..."}
+                {jobPost ? <JobPost {...jobPost} /> : "loading..."}
             </Layout>
         </>
     );
 }
+
+export const getServerSideProps = (async (context) => {
+    const checkoutSessionResponse: JobPostProps = await getCheckoutSession(
+        context.query.id as string
+    );
+    return { props: { jobPost: checkoutSessionResponse } };
+}) satisfies GetServerSideProps<{ jobPost: JobPostProps }>;

@@ -17,10 +17,7 @@ import locations from "./locations.json";
 import jobSkills from "./jobSkills.json";
 import { FaMapPin, FaSearch } from "react-icons/fa";
 import { useForm } from "react-hook-form";
-import getAllJobs from "@/pages/api/all_jobs";
 import { JobPostItem } from "@/pages/api/checkout_session/[id]";
-import { fetchGetJSON } from "@/lib/api-utils";
-import useSWR from "swr";
 
 interface Location {
     city: string;
@@ -91,13 +88,15 @@ export default function JobSearch(props: JobSearchProps) {
     } = useForm();
 
     async function onSubmit(values: any) {
-        const jobsResponse: JobPostItem[] = await fetchGetJSON(
+        const jobsResponse = await fetch(
             `/api/all_jobs?salary=${values.salary ?? ""}&location=${
                 values.location ?? ""
             }&title=${values.title ?? ""}`
         );
 
-        props.setJobPosts(jobsResponse);
+        const data = await jobsResponse.json();
+
+        props.setJobPosts(data);
     }
 
     return (

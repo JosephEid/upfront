@@ -1,4 +1,3 @@
-import { fetchPostJSON } from "@/lib/api-utils";
 import { NextApiRequest, NextApiResponse } from "next";
 
 interface StartChallengeResponse {
@@ -15,10 +14,10 @@ export default async function handler(
 
             const url = `https://pycl29s0vd.execute-api.eu-west-2.amazonaws.com/prod/upfront/start-challenge`;
 
-            const checkoutSessionResponse: StartChallengeResponse =
-                await fetchPostJSON(url, reqBody);
+            //     const checkoutSessionResponse: StartChallengeResponse =
+            //         // await fetchPostJSON(url, reqBody);
 
-            res.status(200).json(checkoutSessionResponse);
+            //         res.status(200).json(checkoutSessionResponse);
         } catch (err) {
             const errorMessage =
                 err instanceof Error ? err.message : "Internal server error";

@@ -1,4 +1,3 @@
-import { fetchGetJSON } from "@/lib/api-utils";
 import { JobPostFormProps } from "@/pages/post-job";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -14,20 +13,22 @@ export interface JobPostItem extends JobPostFormProps {
 
 type Status = "Active" | "Expired" | "PendingPayment";
 
-// get checkout session to validate payment
-export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    const id: string = req.query.id as string;
+export async function getCheckoutSession(id: string) {
     try {
         const url = `https://pycl29s0vd.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
-        const validateSessionResponse: JobPostItem = await fetchGetJSON(url);
+        const validateSessionResponse = await fetch(url, {
+            method: "GET",
+            headers: {
+                "x-api-key": process.env.NEXT_PUBLIC_API_KEY as string,
+                "Content-Type": "application/json",
+            },
+        });
 
-        res.status(200).json(validateSessionResponse);
+        const data = await validateSessionResponse.json();
+        return data;
     } catch (err) {
         const errorMessage =
             err instanceof Error ? err.message : "Internal server error";
-        res.status(500).json({ statusCode: 500, message: errorMessage });
+        throw new Error(errorMessage);
     }
 }

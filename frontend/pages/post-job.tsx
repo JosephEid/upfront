@@ -28,7 +28,6 @@ import Layout from "@/components/Layout";
 import { Control, useController, useForm } from "react-hook-form";
 import { Currency, JobPost } from "@/components/JobPost";
 import { priceFactors } from "@/config";
-import { fetchPostJSON } from "@/lib/api-utils";
 import { CheckoutSessionResponse } from "./api/checkout_session";
 
 export type PlanType = "Standard" | "Premium";
@@ -67,10 +66,15 @@ export default function PostJob() {
     } = useForm({ defaultValues: defaultValues });
 
     async function onSubmit(values: JobPostFormProps) {
-        const checkoutSessionResponse: CheckoutSessionResponse =
-            await fetchPostJSON("/api/checkout_session", values);
+        const checkoutSessionResponse = await fetch("/api/checkout_session", {
+            method: "POST",
+            body: JSON.stringify(values || {}),
+        });
 
-        window.location.href = checkoutSessionResponse.url;
+        const data: CheckoutSessionResponse =
+            await checkoutSessionResponse.json();
+
+        window.location.href = data.url;
     }
 
     const formValues = watch() as JobPostFormProps;

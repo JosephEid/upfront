@@ -122,16 +122,16 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 
 	checkoutSession := upfront.AddResource(jsii.String("checkout-session"), apiResourceOpts)
 	createCheckoutSessionPostIntegration := awsapigateway.NewLambdaIntegration(createCheckoutSession, apiLambdaOpts)
-	checkoutSession.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{})
+	checkoutSession.AddMethod(jsii.String(http.MethodPost), createCheckoutSessionPostIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
 
 	validatePurchaseId := upfront.AddResource(jsii.String("validate-purchase"), apiResourceOpts)
 	validatePurchaseWithId := validatePurchaseId.AddResource(jsii.String("{id}"), apiResourceOpts)
 	validatePurchaseGetIntegration := awsapigateway.NewLambdaIntegration(validatePurchase, apiLambdaOpts)
-	validatePurchaseWithId.AddMethod(jsii.String(http.MethodGet), validatePurchaseGetIntegration, &awsapigateway.MethodOptions{})
+	validatePurchaseWithId.AddMethod(jsii.String(http.MethodGet), validatePurchaseGetIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
 
 	jobPosts := upfront.AddResource(jsii.String("job-posts"), apiResourceOpts)
 	jobPostsGetIntegration := awsapigateway.NewLambdaIntegration(getJobsPosts, apiLambdaOpts)
-	jobPosts.AddMethod(jsii.String(http.MethodGet), jobPostsGetIntegration, &awsapigateway.MethodOptions{})
+	jobPosts.AddMethod(jsii.String(http.MethodGet), jobPostsGetIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
 
 	return stack
 }

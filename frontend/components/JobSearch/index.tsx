@@ -131,7 +131,7 @@ export default function JobSearch(props: JobSearchProps) {
                             })}
                             type="text"
                             placeholder="What role are you looking for, e.g. Skills, Company?"
-                            borderRightRadius={{ md: "0" }}
+                            borderRightRadius={{ sm: "0" }}
                         />
                     </InputGroup>
                     {criteriaSuggestions.length > 0 && (
@@ -191,7 +191,7 @@ export default function JobSearch(props: JobSearchProps) {
                             })}
                             borderRadius={{
                                 base: "0.375rem",
-                                md: "0",
+                                sm: "0",
                             }}
                             mb={{ base: "1rem", md: "0" }}
                         />
@@ -242,7 +242,7 @@ export default function JobSearch(props: JobSearchProps) {
                             id="salary"
                             borderRadius={{
                                 base: "0.375rem",
-                                md: "0",
+                                sm: "0",
                             }}
                             {...register("salary", {
                                 required: "This is required",
@@ -261,7 +261,7 @@ export default function JobSearch(props: JobSearchProps) {
                     backgroundColor="upfront.300"
                     color="white"
                     width={{ base: "100%", md: "20%" }}
-                    borderLeftRadius={{ md: "0" }}
+                    borderLeftRadius={{ sm: "0" }}
                     size={"lg"}
                     lineHeight={"3.5rem"}
                     fontSize={{ base: "1rem", md: "1.5rem" }}

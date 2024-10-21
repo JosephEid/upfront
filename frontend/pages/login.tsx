@@ -6,9 +6,10 @@ import React, { useState } from "react";
 export default function Login() {
     const [email, setEmail] = useState("");
     const submitClicked = () => {
-        // fetchPostJSON("/api/start_challenge", {
-        //     email: email.toLocaleLowerCase(),
-        // });
+        fetch("/api/start_challenge", {
+            body: JSON.stringify({ email: email.toLocaleLowerCase() }),
+            method: "POST",
+        });
     };
     return (
         <>

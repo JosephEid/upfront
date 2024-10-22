@@ -8,8 +8,9 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
-	"github.com/josepheid/upfront/api/handlers/getjobposts"
+	"github.com/josepheid/upfront/api/handlers/startchallenge"
 )
 
 func main() {
@@ -23,6 +24,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	ses := ses.NewFromConfig(config)
+
+	ddbc := dynamodb.NewFromConfig(config)
+
 	upfrontTableName := os.Getenv("UPFRONT_TABLE_NAME")
 
 	// If the environment variable is not set
@@ -31,9 +36,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	ddbc := dynamodb.NewFromConfig(config)
-
-	h, err := getjobposts.NewHandler(logger, upfrontTableName, ddbc)
+	h, err := startchallenge.NewHandler(logger, ses, ddbc, upfrontTableName)
 	if err != nil {
 		logger.Error("could not create handler", slog.Any("error", err))
 		os.Exit(1)

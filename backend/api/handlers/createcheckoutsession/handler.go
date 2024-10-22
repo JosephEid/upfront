@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/google/uuid"
@@ -23,6 +22,7 @@ import (
 type Handler struct {
 	logger    *slog.Logger
 	stripeKey string
+	ddbc      *dynamodb.Client
 	tableName string
 }
 
@@ -36,10 +36,11 @@ type CheckoutSessionResponse struct {
 	URL string `json:"url"`
 }
 
-func NewHandler(logger *slog.Logger, stripeKey string, tableName string) (Handler, error) {
+func NewHandler(logger *slog.Logger, stripeKey string, ddbc *dynamodb.Client, tableName string) (Handler, error) {
 	return Handler{
 		logger:    logger,
 		stripeKey: stripeKey,
+		ddbc:      ddbc,
 		tableName: tableName,
 	}, nil
 }
@@ -113,19 +114,6 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		AllJobs:          "ALL_JOBS",
 	}
 
-	cfg, err := config.LoadDefaultConfig(context.TODO(), func(opts *config.LoadOptions) error {
-		opts.Region = "eu-west-2"
-		return nil
-	})
-
-	if err != nil {
-		h.logger.Error("error loading default config", "error", err)
-		respond.WithError(w, "error loading default config", http.StatusInternalServerError)
-		return
-	}
-
-	svc := dynamodb.NewFromConfig(cfg)
-
 	data, err := attributevalue.MarshalMap(jobPostItem)
 
 	if err != nil {
@@ -134,7 +122,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = svc.PutItem(context.TODO(), &dynamodb.PutItemInput{
+	_, err = h.ddbc.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: aws.String(h.tableName),
 		Item:      data,
 	})

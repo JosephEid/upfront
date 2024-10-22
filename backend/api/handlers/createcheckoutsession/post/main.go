@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
@@ -51,11 +52,13 @@ func main() {
 
 	// If the environment variable is not set
 	if upfrontTableName == "" {
-		logger.Error("environment variable MY_ENV_VAR is not set", "error", err)
+		logger.Error("environment variable UPFRONT_TABLE_NAME is not set", "error", err)
 		os.Exit(1)
 	}
 
-	h, err := createcheckoutsession.NewHandler(logger, secret, upfrontTableName)
+	ddbc := dynamodb.NewFromConfig(config)
+
+	h, err := createcheckoutsession.NewHandler(logger, secret, ddbc, upfrontTableName)
 	if err != nil {
 		logger.Error("could not create handler", slog.Any("error", err))
 		os.Exit(1)

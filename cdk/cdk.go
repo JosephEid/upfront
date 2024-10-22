@@ -101,9 +101,25 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		},
 	})
 
+	startChallenge := golambda.NewGoFunction(stack, jsii.String("startChallenge"), &golambda.GoFunctionProps{
+		Entry:       jsii.String("../backend/api/handlers/startchallenge/post"),
+		Description: jsii.String("lambda responsible for starting magic link auth challenges"),
+		InitialPolicy: &[]awsiam.PolicyStatement{
+			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+				Actions: jsii.Strings("ses:SendEmail",
+					"ses:SendRawEmail"),
+				Resources: jsii.Strings("*"),
+			}),
+		},
+		Environment: &map[string]*string{
+			"UPFRONT_TABLE_NAME": upfrontTable.TableName(),
+		},
+	})
+
 	upfrontTable.GrantFullAccess(createCheckoutSession)
 	upfrontTable.GrantFullAccess(validatePurchase)
 	upfrontTable.GrantFullAccess(getJobsPosts)
+	upfrontTable.GrantFullAccess(startChallenge)
 
 	notFound := golambda.NewGoFunction(stack, jsii.String("notFound"), &golambda.GoFunctionProps{
 		Description: jsii.String("Returns a not found response."),
@@ -132,6 +148,10 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	jobPosts := upfront.AddResource(jsii.String("job-posts"), apiResourceOpts)
 	jobPostsGetIntegration := awsapigateway.NewLambdaIntegration(getJobsPosts, apiLambdaOpts)
 	jobPosts.AddMethod(jsii.String(http.MethodGet), jobPostsGetIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
+
+	startChallengeResource := upfront.AddResource(jsii.String("start-challenge"), apiResourceOpts)
+	startChallengePostIntegration := awsapigateway.NewLambdaIntegration(startChallenge, apiLambdaOpts)
+	startChallengeResource.AddMethod(jsii.String(http.MethodPost), startChallengePostIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
 
 	return stack
 }

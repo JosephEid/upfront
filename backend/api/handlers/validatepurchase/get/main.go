@@ -52,7 +52,7 @@ func main() {
 
 	// If the environment variable is not set
 	if upfrontTableName == "" {
-		logger.Error("environment variable MY_ENV_VAR is not set", "error", err)
+		logger.Error("environment variable UPFRONT_TABLE_NAME is not set", "error", err)
 		os.Exit(1)
 	}
 

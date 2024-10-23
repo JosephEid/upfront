@@ -4,12 +4,18 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/a-h/pathvars"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
+	cognitotypes "github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
+	"golang.org/x/exp/rand"
+
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/josepheid/upfront/api/models"
 	"github.com/josepheid/upfront/internal/respond"
@@ -18,10 +24,12 @@ import (
 )
 
 type Handler struct {
-	logger    *slog.Logger
-	stripeKey string
-	tableName string
-	ddbc      *dynamodb.Client
+	logger     *slog.Logger
+	stripeKey  string
+	tableName  string
+	ddbc       *dynamodb.Client
+	cipc       *cognitoidentityprovider.Client
+	userPoolId string
 }
 
 type ValidatePurchaseResponse struct {
@@ -30,12 +38,14 @@ type ValidatePurchaseResponse struct {
 
 var matcher = pathvars.NewExtractor("*/upfront/validate-purchase/{id}")
 
-func NewHandler(logger *slog.Logger, stripeKey string, tableName string, ddbc *dynamodb.Client) (Handler, error) {
+func NewHandler(logger *slog.Logger, stripeKey string, tableName string, ddbc *dynamodb.Client, cipc *cognitoidentityprovider.Client, userPoolId string) (Handler, error) {
 	return Handler{
-		logger:    logger,
-		stripeKey: stripeKey,
-		tableName: tableName,
-		ddbc:      ddbc,
+		logger:     logger,
+		stripeKey:  stripeKey,
+		tableName:  tableName,
+		ddbc:       ddbc,
+		cipc:       cipc,
+		userPoolId: userPoolId,
 	}, nil
 }
 
@@ -143,6 +153,44 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create user in cognito user pool as it has been confirmed they have paid for a job posta
+
+	_, err = h.cipc.AdminCreateUser(context.Background(), &cognitoidentityprovider.AdminCreateUserInput{
+		UserPoolId:             aws.String(h.userPoolId),
+		Username:               aws.String(strings.ToLower(item.LoginEmail)),
+		MessageAction:          cognitotypes.MessageActionTypeSuppress, // Suppress the temporary password email
+		DesiredDeliveryMediums: []cognitotypes.DeliveryMediumType{},    // Don't send any messages
+		UserAttributes: []cognitotypes.AttributeType{
+			{
+				Name:  aws.String("email"),
+				Value: aws.String(strings.ToLower(item.LoginEmail)),
+			},
+			{
+				Name:  aws.String("email_verified"),
+				Value: aws.String("true"),
+			},
+		},
+	})
+
+	if err != nil {
+		h.logger.Error("error creating user in userpool", "error", err)
+		respond.WithError(w, "error creating user in userpool", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = h.cipc.AdminSetUserPassword(context.Background(), &cognitoidentityprovider.AdminSetUserPasswordInput{
+		UserPoolId: aws.String(h.userPoolId),
+		Username:   aws.String(strings.ToLower(item.LoginEmail)),
+		Password:   aws.String(generateSecureRandomPassword()), // Generate a secure random password
+		Permanent:  true,                                       // This prevents FORCE_CHANGE_PASSWORD status
+	})
+
+	if err != nil {
+		h.logger.Error("error confirming user in userpool", "error", err)
+		respond.WithError(w, "error confirming user in userpool", http.StatusInternalServerError)
+		return
+	}
+
 	itemOut := models.JobPostItem{}
 
 	err = attributevalue.UnmarshalMap(out.Attributes, &itemOut)
@@ -154,4 +202,15 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.WithJSON(w, itemOut, http.StatusOK)
+}
+
+func generateSecureRandomPassword() string {
+	const length = 32
+	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-=[]{}|"
+
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[rand.Intn(len(charset))]
+	}
+	return string(b)
 }

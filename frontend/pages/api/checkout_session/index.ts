@@ -17,6 +17,12 @@ export default async function handler(
     if (req.method === "POST") {
         try {
             const formProps: JobPostFormProps = JSON.parse(req.body);
+            formProps.companyLogoURL =
+                formProps.companyLogoURL.toLocaleLowerCase();
+            formProps.companyWebsite =
+                formProps.companyWebsite.toLocaleLowerCase();
+            formProps.loginEmail = formProps.loginEmail.toLocaleLowerCase();
+
             const csRequest: CheckoutSessionRequest = {
                 ...formProps,
                 successURL: `${req.headers.origin}/success`,

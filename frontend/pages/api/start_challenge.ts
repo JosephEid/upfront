@@ -4,12 +4,22 @@ interface StartChallengeResponse {
     challengeStarted: boolean;
     jobsFound: boolean;
 }
+
+interface StartChallengeRequest {
+    email: string;
+    requestOrigin: string;
+}
+
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
 ) {
     if (req.method === "POST") {
         try {
+            const startChallengeRequest: StartChallengeRequest = JSON.parse(
+                req.body
+            );
+            startChallengeRequest.requestOrigin = req.headers.origin as string;
             const url = `https://pycl29s0vd.execute-api.eu-west-2.amazonaws.com/prod/upfront/start-challenge`;
 
             const checkoutSessionResponse = await fetch(url, {
@@ -24,7 +34,7 @@ export default async function handler(
                 },
                 redirect: "follow", // manual, *follow, error
                 referrerPolicy: "no-referrer", // no-referrer, *client
-                body: req.body, // body data type must match "Content-Type" header
+                body: JSON.stringify(startChallengeRequest), // body data type must match "Content-Type" header
             });
 
             const data: StartChallengeResponse =

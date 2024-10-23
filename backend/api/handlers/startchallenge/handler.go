@@ -2,16 +2,23 @@ package startchallenge
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
+	cognitotypes "github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider/types"
+
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 	"github.com/josepheid/upfront/api/models"
@@ -19,10 +26,14 @@ import (
 )
 
 type Handler struct {
-	logger    *slog.Logger
-	ses       *ses.Client
-	ddbc      *dynamodb.Client
-	tableName string
+	logger     *slog.Logger
+	ses        *ses.Client
+	ddbc       *dynamodb.Client
+	kmsc       *kms.Client
+	cipc       *cognitoidentityprovider.Client
+	tableName  string
+	kmsKeyID   string
+	userPoolId string
 }
 
 type StartChallengeRequest struct {
@@ -35,18 +46,22 @@ type StartChallengeResponse struct {
 	JobsFound        bool `json:"jobsFound"`
 }
 
-func NewHandler(logger *slog.Logger, ses *ses.Client, ddbc *dynamodb.Client, tableName string) (Handler, error) {
-	return Handler{
-		logger:    logger,
-		ses:       ses,
-		ddbc:      ddbc,
-		tableName: tableName,
-	}, nil
+type TokenPayload struct {
+	Email      string `json:"email"`
+	Expiration string `json:"expiration"`
 }
 
-var priceFactors = map[models.PlanType]int{
-	models.Standard: 35,
-	models.Premium:  90,
+func NewHandler(logger *slog.Logger, ses *ses.Client, ddbc *dynamodb.Client, kmsc *kms.Client, cipc *cognitoidentityprovider.Client, tableName, kmsKeyID, userPoolId string) (Handler, error) {
+	return Handler{
+		logger:     logger,
+		ses:        ses,
+		ddbc:       ddbc,
+		kmsc:       kmsc,
+		cipc:       cipc,
+		tableName:  tableName,
+		kmsKeyID:   kmsKeyID,
+		userPoolId: userPoolId,
+	}, nil
 }
 
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +88,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	data, err := h.ddbc.Query(context.TODO(), &dynamodb.QueryInput{
 		TableName:                 aws.String(h.tableName),
-		IndexName:                 aws.String("allJobsIndex"),
+		IndexName:                 aws.String("emailIndex"),
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		KeyConditionExpression:    expr.KeyCondition(),
@@ -101,9 +116,48 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("Job posts found", "jobPostCount", len(jobPosts))
 
-	magicLink := request.RequestOrigin
+	now := time.Now()
+	expires := now.Add(time.Minute * 10)
+	payload := TokenPayload{
+		Email:      request.Email,
+		Expiration: expires.String(),
+	}
+	rawPayload, err := json.Marshal(payload)
+	if err != nil {
+		h.logger.Error("error marshalling token payload", "error", err)
+		respond.WithError(w, "error marshalling token payload", http.StatusInternalServerError)
+		return
+	}
+
+	tokenRaw, err := h.encrypt(rawPayload)
+	if err != nil {
+		h.logger.Error("error encrypting token", "error", err)
+		respond.WithError(w, "error encrypting token", http.StatusInternalServerError)
+		return
+	}
+
+	tokenB64 := base64.StdEncoding.EncodeToString(tokenRaw)
+	token := url.QueryEscape(tokenB64)
+
+	magicLink := fmt.Sprintf("%s/magic-link?email=%s&token=%s", request.RequestOrigin, request.Email, token)
 	emailBody := aws.String(fmt.Sprintf(`<h1>Please use the link below to log in:</h1><br/><br/>
 	<a href='%s'>Log In</a>`, magicLink))
+
+	_, err = h.cipc.AdminUpdateUserAttributes(context.Background(), &cognitoidentityprovider.AdminUpdateUserAttributesInput{
+		UserPoolId: aws.String(h.userPoolId),
+		Username:   aws.String(request.Email),
+		UserAttributes: []cognitotypes.AttributeType{
+			{
+				Name:  aws.String("custom:authChallenge"),
+				Value: aws.String(tokenB64)},
+		},
+	})
+
+	if err != nil {
+		h.logger.Error("error updating user atts", "error", err)
+		respond.WithError(w, "error updating user atts", http.StatusInternalServerError)
+		return
+	}
 
 	_, err = h.ses.SendEmail(context.Background(), &ses.SendEmailInput{
 		Destination: &types.Destination{
@@ -123,4 +177,17 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	respond.WithJSON(w, StartChallengeResponse{ChallengeStarted: true, JobsFound: true}, http.StatusCreated)
+}
+
+func (h Handler) encrypt(input []byte) ([]byte, error) {
+	resp, err := h.kmsc.Encrypt(context.Background(), &kms.EncryptInput{
+		KeyId:     &h.kmsKeyID,
+		Plaintext: input,
+	})
+
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return resp.CiphertextBlob, nil
 }

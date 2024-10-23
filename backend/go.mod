@@ -38,6 +38,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression v1.7.47
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.3.21 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.6.21 // indirect
+	github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider v1.46.2
+	github.com/aws/aws-sdk-go-v2/service/kms v1.37.2
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.34.2 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ses v1.28.2
 	github.com/aws/jsii-runtime-go v1.103.1 // indirect
@@ -48,9 +50,10 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/yuin/goldmark v1.4.13 // indirect
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616 // indirect
-	golang.org/x/mod v0.20.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.23.0 // indirect
-	golang.org/x/tools v0.24.0 // indirect
+	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/tools v0.26.0 // indirect
 )

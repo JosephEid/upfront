@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cognitoidentityprovider"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/aws"
@@ -56,9 +57,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	userPoolId := os.Getenv("USER_POOL_ID")
+
+	// If the environment variable is not set
+	if userPoolId == "" {
+		logger.Error("environment variable UPFRONT_TABLE_NAME is not set", "error", err)
+		os.Exit(1)
+	}
+
 	ddbc := dynamodb.NewFromConfig(config)
 
-	h, err := validatepurchase.NewHandler(logger, secret, upfrontTableName, ddbc)
+	cipc := cognitoidentityprovider.NewFromConfig(config)
+
+	h, err := validatepurchase.NewHandler(logger, secret, upfrontTableName, ddbc, cipc, userPoolId)
 	if err != nil {
 		logger.Error("could not create handler", slog.Any("error", err))
 		os.Exit(1)

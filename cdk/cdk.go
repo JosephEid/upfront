@@ -5,7 +5,9 @@ import (
 
 	"github.com/aws/aws-cdk-go/awscdk/v2"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsapigateway"
+	"github.com/aws/aws-cdk-go/awscdk/v2/awskms"
 
+	"github.com/aws/aws-cdk-go/awscdk/v2/awscognito"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsdynamodb"
 	"github.com/aws/aws-cdk-go/awscdk/v2/awsiam"
 	golambda "github.com/aws/aws-cdk-go/awscdklambdagoalpha/v2"
@@ -23,6 +25,37 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		sprops = props.StackProps
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
+
+	// passwordlessMagicLinkUserPool
+	passwordlessMagicLinkUserPool := awscognito.NewUserPool(stack, jsii.String("passwordlessMagicLinksUserPool"), &awscognito.UserPoolProps{
+		SignInAliases: &awscognito.SignInAliases{
+			Email: jsii.Bool(true),
+		},
+		SignInCaseSensitive: jsii.Bool(false),
+
+		PasswordPolicy: &awscognito.PasswordPolicy{
+			MinLength:        jsii.Number(16),
+			RequireDigits:    jsii.Bool(true),
+			RequireLowercase: jsii.Bool(true),
+			RequireSymbols:   jsii.Bool(true),
+			RequireUppercase: jsii.Bool(true),
+		},
+		// Custom attributes schema
+		CustomAttributes: &map[string]awscognito.ICustomAttribute{
+			"authChallenge": awscognito.NewStringAttribute(&awscognito.StringAttributeProps{
+				Mutable: jsii.Bool(true),
+				MinLen:  jsii.Number(8),
+			}),
+		},
+
+		// Standard attributes configuration
+		StandardAttributes: &awscognito.StandardAttributes{
+			Email: &awscognito.StandardAttribute{
+				Required: jsii.Bool(true),
+				Mutable:  jsii.Bool(false),
+			},
+		},
+	})
 
 	// Upfront Table
 	upfrontTable := awsdynamodb.NewTableV2(stack, jsii.String("Table"), &awsdynamodb.TablePropsV2{
@@ -65,6 +98,57 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		ProjectionType: awsdynamodb.ProjectionType_ALL, // Or specify keys you need with INCLUDE
 	})
 
+	//KMS Key
+	key := awskms.NewKey(stack, &id, &awskms.KeyProps{
+		Enabled:           jsii.Bool(true),
+		EnableKeyRotation: jsii.Bool(true),
+		MultiRegion:       jsii.Bool(false),
+		PendingWindow:     awscdk.Duration_Days(jsii.Number(7)),
+
+		Policy: awsiam.NewPolicyDocument(&awsiam.PolicyDocumentProps{
+			Statements: &[]awsiam.PolicyStatement{
+				// Enable IAM User Permissions
+				awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+					Sid:    jsii.String("EnableIAMUserPermissions"),
+					Effect: awsiam.Effect_ALLOW,
+					Principals: &[]awsiam.IPrincipal{
+						awsiam.NewAccountRootPrincipal(),
+					},
+					Actions: jsii.Strings("kms:*"),
+
+					Resources: jsii.Strings("*"),
+				}),
+
+				// Allow access for Key Administrators
+				awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+					Sid:    jsii.String("AllowAccessForKeyAdministrators"),
+					Effect: awsiam.Effect_ALLOW,
+					Principals: &[]awsiam.IPrincipal{
+						awsiam.NewServicePrincipal(jsii.String("iam.amazonaws.com"), &awsiam.ServicePrincipalOpts{}),
+						awsiam.NewAccountPrincipal(*stack.Account()),
+					},
+					Actions: &[]*string{
+						jsii.String("kms:Create*"),
+						jsii.String("kms:Describe*"),
+						jsii.String("kms:Enable*"),
+						jsii.String("kms:List*"),
+						jsii.String("kms:Put*"),
+						jsii.String("kms:Update*"),
+						jsii.String("kms:Revoke*"),
+						jsii.String("kms:Disable*"),
+						jsii.String("kms:Get*"),
+						jsii.String("kms:Delete*"),
+						jsii.String("kms:TagResource"),
+						jsii.String("kms:UntagResource"),
+						jsii.String("kms:ScheduleKeyDeletion"),
+						jsii.String("kms:CancelKeyDeletion"),
+					},
+					Resources: jsii.Strings("*"),
+				}),
+			},
+		}),
+	})
+
 	createCheckoutSession := golambda.NewGoFunction(stack, jsii.String("createCheckoutSession"), &golambda.GoFunctionProps{
 		Entry:       jsii.String("../backend/api/handlers/createcheckoutsession/post"),
 		Description: jsii.String("lambda responsible for creating checkout sessions"),
@@ -84,12 +168,13 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		Description: jsii.String("lambda responsible for validate that the customer has paid"),
 		InitialPolicy: &[]awsiam.PolicyStatement{
 			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
-				Actions:   jsii.Strings("secretsmanager:GetSecretValue"),
+				Actions:   jsii.Strings("secretsmanager:GetSecretValue", "cognito-idp:AdminCreateUser", "cognito-idp:AdminSetUserPassword"),
 				Resources: jsii.Strings("*"),
 			}),
 		},
 		Environment: &map[string]*string{
 			"UPFRONT_TABLE_NAME": upfrontTable.TableName(),
+			"USER_POOL_ID":       passwordlessMagicLinkUserPool.UserPoolId(),
 		},
 	})
 
@@ -110,9 +195,23 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 					"ses:SendRawEmail"),
 				Resources: jsii.Strings("*"),
 			}),
+			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+				Actions:   jsii.Strings("kms:Encrypt"),
+				Resources: jsii.Strings(*key.KeyArn()),
+			}),
+			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+				Actions:   jsii.Strings("kms:Encrypt"),
+				Resources: jsii.Strings(*key.KeyArn()),
+			}),
+			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+				Actions:   jsii.Strings("cognito-idp:AdminUpdateUserAttributes"),
+				Resources: jsii.Strings(*passwordlessMagicLinkUserPool.UserPoolArn()),
+			}),
 		},
 		Environment: &map[string]*string{
 			"UPFRONT_TABLE_NAME": upfrontTable.TableName(),
+			"KMS_KEY_ID":         key.KeyId(),
+			"USER_POOL_ID":       passwordlessMagicLinkUserPool.UserPoolId(),
 		},
 	})
 
@@ -192,7 +291,7 @@ func env() *awscdk.Environment {
 	// stacks.
 	//---------------------------------------------------------------------------
 	// return &awscdk.Environment{
-	//  Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
-	//  Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
+	// 	Account: jsii.String(os.Getenv("CDK_DEFAULT_ACCOUNT")),
+	// 	Region:  jsii.String(os.Getenv("CDK_DEFAULT_REGION")),
 	// }
 }

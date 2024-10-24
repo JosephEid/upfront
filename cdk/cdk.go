@@ -26,78 +26,6 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	}
 	stack := awscdk.NewStack(scope, &id, &sprops)
 
-	// passwordlessMagicLinkUserPool
-	passwordlessMagicLinkUserPool := awscognito.NewUserPool(stack, jsii.String("passwordlessMagicLinksUserPool"), &awscognito.UserPoolProps{
-		SignInAliases: &awscognito.SignInAliases{
-			Email: jsii.Bool(true),
-		},
-		SignInCaseSensitive: jsii.Bool(false),
-
-		PasswordPolicy: &awscognito.PasswordPolicy{
-			MinLength:        jsii.Number(16),
-			RequireDigits:    jsii.Bool(true),
-			RequireLowercase: jsii.Bool(true),
-			RequireSymbols:   jsii.Bool(true),
-			RequireUppercase: jsii.Bool(true),
-		},
-		// Custom attributes schema
-		CustomAttributes: &map[string]awscognito.ICustomAttribute{
-			"authChallenge": awscognito.NewStringAttribute(&awscognito.StringAttributeProps{
-				Mutable: jsii.Bool(true),
-				MinLen:  jsii.Number(8),
-			}),
-		},
-
-		// Standard attributes configuration
-		StandardAttributes: &awscognito.StandardAttributes{
-			Email: &awscognito.StandardAttribute{
-				Required: jsii.Bool(true),
-				Mutable:  jsii.Bool(false),
-			},
-		},
-	})
-
-	// Upfront Table
-	upfrontTable := awsdynamodb.NewTableV2(stack, jsii.String("Table"), &awsdynamodb.TablePropsV2{
-		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("PK"),
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		SortKey: &awsdynamodb.Attribute{
-			Name: jsii.String("SK"),
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-	})
-
-	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
-		IndexName: jsii.String("emailIndex"),
-		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("loginEmail"),
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		SortKey: &awsdynamodb.Attribute{
-			Name: jsii.String("PK"),
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		ProjectionType: awsdynamodb.ProjectionType_INCLUDE,
-		NonKeyAttributes: &[]*string{
-			jsii.String("createdAt"),
-		},
-	})
-
-	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
-		IndexName: jsii.String("allJobsIndex"),
-		PartitionKey: &awsdynamodb.Attribute{
-			Name: jsii.String("allJobs"), // A constant string, e.g., "ALL_JOBS"
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		SortKey: &awsdynamodb.Attribute{
-			Name: jsii.String("createdAt"), // Sort by createdAt datetime
-			Type: awsdynamodb.AttributeType_STRING,
-		},
-		ProjectionType: awsdynamodb.ProjectionType_ALL, // Or specify keys you need with INCLUDE
-	})
-
 	//KMS Key
 	key := awskms.NewKey(stack, &id, &awskms.KeyProps{
 		Enabled:           jsii.Bool(true),
@@ -149,6 +77,107 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		}),
 	})
 
+	createAuthChallenge := golambda.NewGoFunction(stack, jsii.String("createAuthChallenge"), &golambda.GoFunctionProps{
+		Entry:       jsii.String("../backend/auth/handlers/createauthchallenge"),
+		Description: jsii.String("lambda responsible for creating auth challenges"),
+	})
+
+	defineAuthChallenge := golambda.NewGoFunction(stack, jsii.String("defineAuthChallenge"), &golambda.GoFunctionProps{
+		Entry:       jsii.String("../backend/auth/handlers/defineauthchallenge"),
+		Description: jsii.String("lambda responsible for defining auth challenges"),
+	})
+
+	verifyAuthChallengeResponse := golambda.NewGoFunction(stack, jsii.String("verifyAuthChallengeResponse"), &golambda.GoFunctionProps{
+		Entry:       jsii.String("../backend/auth/handlers/verifyauthchallengeresponse"),
+		Description: jsii.String("lambda responsible for verifying auth challenge responses"),
+		InitialPolicy: &[]awsiam.PolicyStatement{
+			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
+				Actions:   jsii.Strings("kms:Decrypt"),
+				Resources: jsii.Strings(*key.KeyArn()),
+			}),
+		},
+		Environment: &map[string]*string{
+			"KMS_KEY_ID": key.KeyId(),
+		},
+	})
+
+	// passwordlessMagicLinkUserPool
+	passwordlessMagicLinkUserPool := awscognito.NewUserPool(stack, jsii.String("passwordlessMagicLinksUserPool"), &awscognito.UserPoolProps{
+		SignInAliases: &awscognito.SignInAliases{
+			Email: jsii.Bool(true),
+		},
+		SignInCaseSensitive: jsii.Bool(false),
+
+		PasswordPolicy: &awscognito.PasswordPolicy{
+			MinLength:        jsii.Number(16),
+			RequireDigits:    jsii.Bool(true),
+			RequireLowercase: jsii.Bool(true),
+			RequireSymbols:   jsii.Bool(true),
+			RequireUppercase: jsii.Bool(true),
+		},
+		// Custom attributes schema
+		CustomAttributes: &map[string]awscognito.ICustomAttribute{
+			"authChallenge": awscognito.NewStringAttribute(&awscognito.StringAttributeProps{
+				Mutable: jsii.Bool(true),
+				MinLen:  jsii.Number(8),
+			}),
+		},
+
+		// Standard attributes configuration
+		StandardAttributes: &awscognito.StandardAttributes{
+			Email: &awscognito.StandardAttribute{
+				Required: jsii.Bool(true),
+				Mutable:  jsii.Bool(false),
+			},
+		},
+		LambdaTriggers: &awscognito.UserPoolTriggers{
+			DefineAuthChallenge:         defineAuthChallenge,
+			CreateAuthChallenge:         createAuthChallenge,
+			VerifyAuthChallengeResponse: verifyAuthChallengeResponse,
+		},
+	})
+
+	// Upfront Table
+	upfrontTable := awsdynamodb.NewTableV2(stack, jsii.String("Table"), &awsdynamodb.TablePropsV2{
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("PK"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		SortKey: &awsdynamodb.Attribute{
+			Name: jsii.String("SK"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+	})
+
+	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
+		IndexName: jsii.String("emailIndex"),
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("loginEmail"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		SortKey: &awsdynamodb.Attribute{
+			Name: jsii.String("PK"),
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		ProjectionType: awsdynamodb.ProjectionType_INCLUDE,
+		NonKeyAttributes: &[]*string{
+			jsii.String("createdAt"),
+		},
+	})
+
+	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{
+		IndexName: jsii.String("allJobsIndex"),
+		PartitionKey: &awsdynamodb.Attribute{
+			Name: jsii.String("allJobs"), // A constant string, e.g., "ALL_JOBS"
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		SortKey: &awsdynamodb.Attribute{
+			Name: jsii.String("createdAt"), // Sort by createdAt datetime
+			Type: awsdynamodb.AttributeType_STRING,
+		},
+		ProjectionType: awsdynamodb.ProjectionType_ALL, // Or specify keys you need with INCLUDE
+	})
+
 	createCheckoutSession := golambda.NewGoFunction(stack, jsii.String("createCheckoutSession"), &golambda.GoFunctionProps{
 		Entry:       jsii.String("../backend/api/handlers/createcheckoutsession/post"),
 		Description: jsii.String("lambda responsible for creating checkout sessions"),
@@ -194,10 +223,6 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 				Actions: jsii.Strings("ses:SendEmail",
 					"ses:SendRawEmail"),
 				Resources: jsii.Strings("*"),
-			}),
-			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
-				Actions:   jsii.Strings("kms:Encrypt"),
-				Resources: jsii.Strings(*key.KeyArn()),
 			}),
 			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
 				Actions:   jsii.Strings("kms:Encrypt"),

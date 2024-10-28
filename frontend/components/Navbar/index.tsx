@@ -122,6 +122,7 @@ export default function Navbar() {
                                 onClick={async () => {
                                     await fetch("/api/sign_out");
                                     setIsSignedIn(false);
+                                    router.push("/login");
                                 }}
                                 _hover={{
                                     bg: "upfront.200",

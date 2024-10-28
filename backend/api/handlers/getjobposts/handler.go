@@ -39,6 +39,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	keyCondition := expression.KeyEqual(expression.Key("allJobs"), expression.Value("ALL_JOBS"))
 	// Extract salary from the query params and build the filter expression
 	salary := r.URL.Query().Get("salary")
+
 	if salary != "" {
 		h.logger.Info("incoming salary " + salary)
 		intSalary, err := strconv.Atoi(salary)

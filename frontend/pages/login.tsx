@@ -2,14 +2,39 @@ import Head from "next/head";
 import { Box, Button, Center, Divider, Input, Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
 import React, { useState } from "react";
+import { isSignedIn } from "./api/signed_in";
+import { GetServerSideProps } from "next";
 
 export default function Login() {
     const [email, setEmail] = useState("");
-    const submitClicked = () => {
-        fetch("/api/start_challenge", {
+    const [error, setError] = useState(false);
+    const [complete, setComplete] = useState(false);
+    const [noJobsFound, setNoJobsFound] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const submitClicked = async () => {
+        setError(false);
+        setComplete(false);
+        setNoJobsFound(false);
+        setIsLoading(true);
+        const startChallengeRes = await fetch("/api/start_challenge", {
             body: JSON.stringify({ email: email.toLocaleLowerCase() }),
             method: "POST",
         });
+        setIsLoading(false);
+
+        const resBody = await startChallengeRes.json();
+        if (startChallengeRes.status !== 200) {
+            setError(true);
+            return;
+        }
+        if (resBody.jobsFound && resBody.challengeStarted) {
+            setComplete(true);
+            return;
+        }
+        if (!resBody.jobsFound) {
+            setNoJobsFound(true);
+            return;
+        }
     };
     return (
         <>
@@ -34,24 +59,64 @@ export default function Login() {
                         <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
                             Login
                         </Text>
-                        <Text>
-                            Log in below to manage and view Jobs that you have
-                            posted.
-                        </Text>
-                        <Input
-                            type="email"
-                            placeholder="Enter your email address."
-                            my="1rem"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
-                        <Divider mb="1rem" />
-                        <Button width="100%" onClick={() => submitClicked()}>
-                            Submit
-                        </Button>
+
+                        {!error && !complete && !noJobsFound && (
+                            <>
+                                <Text>
+                                    Log in below to manage and view Jobs that
+                                    you have posted.
+                                </Text>
+                                <Input
+                                    type="email"
+                                    placeholder="Enter your email address."
+                                    my="1rem"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                                <Divider mb="1rem" />
+                                <Button
+                                    width="100%"
+                                    onClick={async () => await submitClicked()}
+                                    isLoading={isLoading}
+                                >
+                                    Submit
+                                </Button>
+                            </>
+                        )}
+                        {error && (
+                            <Text>
+                                Something went wrong, please try again later...
+                            </Text>
+                        )}
+                        {complete && (
+                            <Text>
+                                Magic link sent to {email}, please check your
+                                email inbox!
+                            </Text>
+                        )}
+                        {noJobsFound && (
+                            <Text>
+                                No jobs found, please use the email you used to
+                                create your job post.
+                            </Text>
+                        )}
                     </Box>
                 </Center>
             </Layout>
         </>
     );
 }
+
+export const getServerSideProps = (async (context) => {
+    const signedIn = await isSignedIn();
+    if (signedIn) {
+        return {
+            redirect: {
+                destination: "/dashboard",
+                permanent: false,
+            },
+        };
+    }
+
+    return { props: { text: "hey" } };
+}) satisfies GetServerSideProps;

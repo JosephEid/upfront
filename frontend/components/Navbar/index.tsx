@@ -23,26 +23,23 @@ import {
     ChevronRightIcon,
 } from "@chakra-ui/icons";
 import { NextRouter, useRouter } from "next/router";
-import { getCurrentUser, signOut } from "aws-amplify/auth";
-import { useEffect, useState } from "react";
+import { signOut } from "aws-amplify/auth";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 export default function Navbar() {
     const { isOpen, onToggle } = useDisclosure();
     const router = useRouter();
 
-    const [isSignedIn, setIsSignedIn] = useState(false);
+    const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(
+        undefined
+    );
     useEffect(() => {
         const checkSignedIn = async () => {
-            try {
-                console.log("Checking auth status...");
-                const user = await getCurrentUser();
-                console.log("Amplify getCurrentUser returned:", user);
-                setIsSignedIn(true);
-            } catch (error) {
-                // If getCurrentUser throws an error, it usually means no user is signed in
-                console.log("No signed-in user found:", error);
-                setIsSignedIn(false);
-            }
+            const signedIn = await fetch("/api/signed_in");
+
+            const body: boolean = await signedIn.json();
+
+            setIsSignedIn(body);
         };
 
         checkSignedIn();
@@ -114,43 +111,48 @@ export default function Navbar() {
                     >
                         Post a job
                     </Button>
-                    {isSignedIn ? (
-                        <Button
-                            display={{ base: "none", md: "inline-flex" }}
-                            fontSize={"1rem"}
-                            fontWeight={600}
-                            color={"white"}
-                            bg={"upfront.300"}
-                            onClick={async () => {
-                                console.log("here");
-                                await signOut();
-                            }}
-                            _hover={{
-                                bg: "upfront.200",
-                            }}
-                        >
-                            Log Out
-                        </Button>
-                    ) : (
-                        <Button
-                            display={{ base: "none", md: "inline-flex" }}
-                            fontSize={"1rem"}
-                            fontWeight={600}
-                            color={"white"}
-                            bg={"upfront.300"}
-                            onClick={() => router.push("/login")}
-                            _hover={{
-                                bg: "upfront.200",
-                            }}
-                        >
-                            Recruiter Log In
-                        </Button>
-                    )}
+                    {isSignedIn !== undefined &&
+                        (isSignedIn === true ? (
+                            <Button
+                                display={{ base: "none", md: "inline-flex" }}
+                                fontSize={"1rem"}
+                                fontWeight={600}
+                                color={"white"}
+                                bg={"upfront.300"}
+                                onClick={async () => {
+                                    await fetch("/api/sign_out");
+                                    setIsSignedIn(false);
+                                }}
+                                _hover={{
+                                    bg: "upfront.200",
+                                }}
+                            >
+                                Log Out
+                            </Button>
+                        ) : (
+                            <Button
+                                display={{ base: "none", md: "inline-flex" }}
+                                fontSize={"1rem"}
+                                fontWeight={600}
+                                color={"white"}
+                                bg={"upfront.300"}
+                                onClick={() => router.push("/login")}
+                                _hover={{
+                                    bg: "upfront.200",
+                                }}
+                            >
+                                Recruiter Log In
+                            </Button>
+                        ))}
                 </Stack>
             </Flex>
 
             <Collapse in={isOpen} animateOpacity>
-                <MobileNav router={router} />
+                <MobileNav
+                    router={router}
+                    isSignedIn={isSignedIn}
+                    setIsSignedIn={setIsSignedIn}
+                />
             </Collapse>
         </Box>
     );
@@ -254,7 +256,15 @@ const DesktopSubNav = ({ label, href, subLabel }: NavItem) => {
     );
 };
 
-const MobileNav = ({ router }: { router: NextRouter }) => {
+const MobileNav = ({
+    router,
+    isSignedIn,
+    setIsSignedIn,
+}: {
+    router: NextRouter;
+    isSignedIn: boolean | undefined;
+    setIsSignedIn: Dispatch<SetStateAction<boolean | undefined>>;
+}) => {
     return (
         <Stack
             bg={useColorModeValue("white", "gray.800")}
@@ -272,23 +282,41 @@ const MobileNav = ({ router }: { router: NextRouter }) => {
                 spacing={6}
                 className={"buttons"}
             >
-                <Button as="a" onClick={() => router.push("/post-job")}>
+                <Button onClick={() => router.push("/post-job")}>
                     Post a job
                 </Button>
-                <Button
-                    as={"a"}
-                    fontSize={"1rem"}
-                    fontWeight={600}
-                    color={"white"}
-                    bg={"upfront.300"}
-                    href={"#"}
-                    _hover={{
-                        bg: "upfront.200",
-                    }}
-                    onClick={() => router.push("/login")}
-                >
-                    Recruiter Log In
-                </Button>
+                {isSignedIn !== undefined &&
+                    (isSignedIn === true ? (
+                        <Button
+                            fontSize={"1rem"}
+                            fontWeight={600}
+                            color={"white"}
+                            bg={"upfront.300"}
+                            onClick={async () => {
+                                await fetch("/api/sign_out");
+                                setIsSignedIn(false);
+                                router.push("/login");
+                            }}
+                            _hover={{
+                                bg: "upfront.200",
+                            }}
+                        >
+                            Log Out
+                        </Button>
+                    ) : (
+                        <Button
+                            fontSize={"1rem"}
+                            fontWeight={600}
+                            color={"white"}
+                            bg={"upfront.300"}
+                            onClick={() => router.push("/login")}
+                            _hover={{
+                                bg: "upfront.200",
+                            }}
+                        >
+                            Recruiter Log In
+                        </Button>
+                    ))}
             </Stack>
         </Stack>
     );

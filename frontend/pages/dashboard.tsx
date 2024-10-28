@@ -5,16 +5,21 @@ import React, { useEffect, useState } from "react";
 import { GetServerSideProps } from "next";
 import { signIn, confirmSignIn, getCurrentUser } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
+import { isSignedIn } from "./api/signed_in";
+import { JobPostItem } from "./api/checkout_session/[id]";
+import { getRecruiterJobs } from "./api/recruiter_jobs";
+import { JobPost } from "@/components/JobPost";
 
 interface DashboardProps {
-    text: string;
+    jobs: JobPostItem[];
+    email: string;
 }
 
 Amplify.configure({
     Auth: {
         Cognito: {
-            userPoolId: "eu-west-2_9a3LBlCrH",
-            userPoolClientId: "2s8c9u68r2vbja5sg2udqjhqft",
+            userPoolId: "eu-west-2_mXJEXo9bq",
+            userPoolClientId: "4krvn7bk6oeg0vavpt73igam23",
             loginWith: {
                 email: true,
             },
@@ -41,17 +46,28 @@ export default function Dashboard(props: DashboardProps) {
                 />
             </Head>
             <Layout>
-                <Center>
-                    <Text>Dashboard</Text>
-                </Center>
+                <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
+                    Dashboard for {props.email}
+                </Text>
+                {props.jobs &&
+                    props.jobs?.map((x, i) => {
+                        return (
+                            <Box my="1rem" key={i}>
+                                <JobPost {...x} />
+                            </Box>
+                        );
+                    })}
+                {!props.jobs ||
+                    (props.jobs.length === 0 && (
+                        <Text>No Jobs found matching your criteria...</Text>
+                    ))}
             </Layout>
         </>
     );
 }
 
 export const getServerSideProps = (async (context) => {
-    const signedIn = await getCurrentUser();
-    console.log("signed in?", signedIn);
+    const signedIn = await isSignedIn();
     if (!signedIn) {
         return {
             redirect: {
@@ -61,5 +77,6 @@ export const getServerSideProps = (async (context) => {
         };
     }
 
-    return { props: { text: "hey" } };
+    const data = await getRecruiterJobs();
+    return { props: { jobs: data.jobs, email: data.email } };
 }) satisfies GetServerSideProps<DashboardProps>;

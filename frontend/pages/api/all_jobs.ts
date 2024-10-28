@@ -9,7 +9,7 @@ interface searchParams {
 // get checkout session to validate payment
 export async function getAllJobs(values?: searchParams) {
     try {
-        const url = `https://dqc40odta0.execute-api.eu-west-2.amazonaws.com/prod/upfront/job-posts?salary=${
+        const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/job-posts?salary=${
             values?.salary ?? ""
         }&title=${values?.title ?? ""}&location=${values?.location ?? ""}`;
         const getAllJobsResponse = await fetch(url, {

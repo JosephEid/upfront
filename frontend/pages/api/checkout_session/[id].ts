@@ -15,7 +15,7 @@ type Status = "Active" | "Expired" | "PendingPayment";
 
 export async function getCheckoutSession(id: string) {
     try {
-        const url = `https://dqc40odta0.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
+        const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
         const validateSessionResponse = await fetch(url, {
             method: "GET",
             headers: {

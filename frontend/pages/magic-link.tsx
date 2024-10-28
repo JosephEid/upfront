@@ -1,11 +1,10 @@
 import Head from "next/head";
 import { Box, Button, Center, Divider, Input, Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { GetServerSideProps } from "next";
-import { signIn, confirmSignIn, getCurrentUser } from "aws-amplify/auth";
-import { Amplify } from "aws-amplify";
-import { redirect } from "next/navigation";
+import { signIn, confirmSignIn } from "aws-amplify/auth";
+import { isSignedIn } from "./api/signed_in";
 
 interface MagicLinkProps {
     email: string;
@@ -45,7 +44,7 @@ export const getServerSideProps = (async (context) => {
         token: context.query.token as string,
     };
 
-    const signedIn = await getCurrentUser();
+    const signedIn = await isSignedIn();
     if (signedIn) {
         return {
             redirect: {

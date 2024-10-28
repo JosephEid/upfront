@@ -5,12 +5,23 @@ import React, { useEffect, useState } from "react";
 import { GetServerSideProps } from "next";
 import { signIn, confirmSignIn, getCurrentUser } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
-import { redirect } from "next/navigation";
 
 interface MagicLinkProps {
     email: string;
     token: string;
 }
+
+Amplify.configure({
+    Auth: {
+        Cognito: {
+            userPoolId: "eu-west-2_2vpZhBuJw",
+            userPoolClientId: "4b1iq90iad3vje9lb1vdai0qfm",
+            loginWith: {
+                email: true,
+            },
+        },
+    },
+});
 
 export default function Login(props: MagicLinkProps) {
     return (
@@ -45,16 +56,6 @@ export const getServerSideProps = (async (context) => {
         token: context.query.token as string,
     };
 
-    const signedIn = await getCurrentUser();
-    if (signedIn) {
-        return {
-            redirect: {
-                destination: "/dashboard",
-                permanent: false,
-            },
-        };
-    }
-
     const cognitoUser = await signIn({
         username: props.email,
         options: { authFlowType: "CUSTOM_WITHOUT_SRP" },
@@ -63,22 +64,7 @@ export const getServerSideProps = (async (context) => {
         const challengeResult = await confirmSignIn({
             challengeResponse: props.token,
         });
-
-        if (challengeResult.isSignedIn) {
-            return {
-                redirect: {
-                    destination: "/dashboard",
-                    permanent: false,
-                },
-            };
-        } else {
-            return {
-                redirect: {
-                    destination: "/error",
-                    permanent: false,
-                },
-            };
-        }
+        console.log(challengeResult);
     } catch (err) {
         console.log(err);
     }

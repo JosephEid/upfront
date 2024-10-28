@@ -117,10 +117,10 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Job posts found", "jobPostCount", len(jobPosts))
 
 	now := time.Now()
-	expires := now.Add(time.Minute * 10)
+	expires := now.Add(time.Minute * 10).Format(time.RFC3339)
 	payload := TokenPayload{
 		Email:      request.Email,
-		Expiration: expires.String(),
+		Expiration: expires,
 	}
 	rawPayload, err := json.Marshal(payload)
 	if err != nil {

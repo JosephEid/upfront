@@ -137,6 +137,14 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		},
 	})
 
+	passwordlessMagicLinkUserPool.AddClient(jsii.String("webUserPoolClient"), &awscognito.UserPoolClientOptions{
+		AuthFlows: &awscognito.AuthFlow{
+			Custom: jsii.Bool(true),
+		},
+		RefreshTokenValidity:       awscdk.Duration_Days(jsii.Number(1)),
+		PreventUserExistenceErrors: jsii.Bool(true),
+	})
+
 	// Upfront Table
 	upfrontTable := awsdynamodb.NewTableV2(stack, jsii.String("Table"), &awsdynamodb.TablePropsV2{
 		PartitionKey: &awsdynamodb.Attribute{
@@ -160,9 +168,10 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 			Type: awsdynamodb.AttributeType_STRING,
 		},
 		ProjectionType: awsdynamodb.ProjectionType_INCLUDE,
-		NonKeyAttributes: &[]*string{
-			jsii.String("createdAt"),
-		},
+		NonKeyAttributes: jsii.Strings(
+			"createdAt",
+			"clickedApplyCount",
+		),
 	})
 
 	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{

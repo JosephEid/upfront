@@ -29,7 +29,7 @@ export default async function handler(
                 cancelURL: `${req.headers.origin}/post-job`,
             };
             console.log(csRequest);
-            const url = `https://pycl29s0vd.execute-api.eu-west-2.amazonaws.com/prod/upfront/checkout-session`;
+            const url = `https://dqc40odta0.execute-api.eu-west-2.amazonaws.com/prod/upfront/checkout-session`;
 
             const checkoutSessionResponse = await fetch(url, {
                 method: "POST", // *GET, POST, PUT, DELETE, etc.

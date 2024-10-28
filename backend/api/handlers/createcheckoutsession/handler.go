@@ -103,15 +103,16 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	createdAt, updatedAt := now, now
 
 	jobPostItem := models.JobPostItem{
-		JobPostFormProps: request,
-		PK:               models.FormatPK(jobID.String()),
-		SK:               createdAt.Format(time.RFC3339),
-		JobID:            jobID.String(),
-		SessionID:        checkoutSessionResult.ID,
-		CreatedAt:        createdAt.Format(time.RFC3339),
-		UpdatedAt:        updatedAt.Format(time.RFC3339),
-		Status:           models.PendingPayment,
-		AllJobs:          "ALL_JOBS",
+		JobPostFormProps:  request,
+		PK:                models.FormatPK(jobID.String()),
+		SK:                createdAt.Format(time.RFC3339),
+		JobID:             jobID.String(),
+		SessionID:         checkoutSessionResult.ID,
+		CreatedAt:         createdAt.Format(time.RFC3339),
+		UpdatedAt:         updatedAt.Format(time.RFC3339),
+		Status:            models.PendingPayment,
+		ClickedApplyCount: 0,
+		AllJobs:           "ALL_JOBS",
 	}
 
 	data, err := attributevalue.MarshalMap(jobPostItem)

@@ -1,6 +1,19 @@
 import type { AppProps } from "next/app";
 import { ChakraProvider, extendTheme } from "@chakra-ui/react";
 import "../styles/index.css";
+import { Amplify } from "aws-amplify";
+
+Amplify.configure({
+    Auth: {
+        Cognito: {
+            userPoolId: "eu-west-2_2vpZhBuJw",
+            userPoolClientId: "4b1iq90iad3vje9lb1vdai0qfm",
+            loginWith: {
+                email: true,
+            },
+        },
+    },
+});
 
 export default function App({ Component, pageProps }: AppProps) {
     const theme = extendTheme({

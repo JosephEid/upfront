@@ -20,7 +20,7 @@ export default async function handler(
                 req.body
             );
             startChallengeRequest.requestOrigin = req.headers.origin as string;
-            const url = `https://pycl29s0vd.execute-api.eu-west-2.amazonaws.com/prod/upfront/start-challenge`;
+            const url = `https://dqc40odta0.execute-api.eu-west-2.amazonaws.com/prod/upfront/start-challenge`;
 
             const checkoutSessionResponse = await fetch(url, {
                 method: "POST", // *GET, POST, PUT, DELETE, etc.

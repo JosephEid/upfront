@@ -52,14 +52,15 @@ type JobPostFormProps struct {
 
 type JobPostItem struct {
 	JobPostFormProps
-	PK        string `dynamodbav:"PK" json:"PK"`
-	SK        string `dynamodbav:"SK" json:"SK"`
-	AllJobs   string `dynamodbav:"allJobs" json:"allJobs"`
-	JobID     string `dynamodbav:"jobID" json:"jobID"`
-	SessionID string `dynamodbav:"sessionID" json:"sessionID"`
-	CreatedAt string `dynamodbav:"createdAt" json:"createdAt"`
-	UpdatedAt string `dynamodbav:"updatedAt" json:"updatedAt"`
-	Status    Status `dynamodbav:"status" json:"status"`
+	PK                string `dynamodbav:"PK" json:"PK"`
+	SK                string `dynamodbav:"SK" json:"SK"`
+	AllJobs           string `dynamodbav:"allJobs" json:"allJobs"`
+	JobID             string `dynamodbav:"jobID" json:"jobID"`
+	SessionID         string `dynamodbav:"sessionID" json:"sessionID"`
+	CreatedAt         string `dynamodbav:"createdAt" json:"createdAt"`
+	UpdatedAt         string `dynamodbav:"updatedAt" json:"updatedAt"`
+	ClickedApplyCount int    `dynamodbav:"clickedApplyCount" json:"clickedApplyCount"`
+	Status            Status `dynamodbav:"status" json:"status"`
 }
 
 func FormatPK(id string) string {

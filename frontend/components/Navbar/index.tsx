@@ -23,10 +23,30 @@ import {
     ChevronRightIcon,
 } from "@chakra-ui/icons";
 import { NextRouter, useRouter } from "next/router";
+import { getCurrentUser, signOut } from "aws-amplify/auth";
+import { useEffect, useState } from "react";
 
 export default function Navbar() {
     const { isOpen, onToggle } = useDisclosure();
     const router = useRouter();
+
+    const [isSignedIn, setIsSignedIn] = useState(false);
+    useEffect(() => {
+        const checkSignedIn = async () => {
+            try {
+                console.log("Checking auth status...");
+                const user = await getCurrentUser();
+                console.log("Amplify getCurrentUser returned:", user);
+                setIsSignedIn(true);
+            } catch (error) {
+                // If getCurrentUser throws an error, it usually means no user is signed in
+                console.log("No signed-in user found:", error);
+                setIsSignedIn(false);
+            }
+        };
+
+        checkSignedIn();
+    }, []);
 
     return (
         <Box mb={{ base: 0, md: "1rem" }} mx={{ base: 0, md: "2rem" }}>
@@ -94,19 +114,38 @@ export default function Navbar() {
                     >
                         Post a job
                     </Button>
-                    <Button
-                        display={{ base: "none", md: "inline-flex" }}
-                        fontSize={"1rem"}
-                        fontWeight={600}
-                        color={"white"}
-                        bg={"upfront.300"}
-                        onClick={() => router.push("/login")}
-                        _hover={{
-                            bg: "upfront.200",
-                        }}
-                    >
-                        Recruiter Log In
-                    </Button>
+                    {isSignedIn ? (
+                        <Button
+                            display={{ base: "none", md: "inline-flex" }}
+                            fontSize={"1rem"}
+                            fontWeight={600}
+                            color={"white"}
+                            bg={"upfront.300"}
+                            onClick={async () => {
+                                console.log("here");
+                                await signOut();
+                            }}
+                            _hover={{
+                                bg: "upfront.200",
+                            }}
+                        >
+                            Log Out
+                        </Button>
+                    ) : (
+                        <Button
+                            display={{ base: "none", md: "inline-flex" }}
+                            fontSize={"1rem"}
+                            fontWeight={600}
+                            color={"white"}
+                            bg={"upfront.300"}
+                            onClick={() => router.push("/login")}
+                            _hover={{
+                                bg: "upfront.200",
+                            }}
+                        >
+                            Recruiter Log In
+                        </Button>
+                    )}
                 </Stack>
             </Flex>
 

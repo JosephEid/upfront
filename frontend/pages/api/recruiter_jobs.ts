@@ -10,11 +10,10 @@ export interface getRecruiterJobsResponse {
 export async function getRecruiterJobs() {
     try {
         const currentUser = await getCurrentUser();
-        console.log(currentUser);
-        const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/recruiter-posts?email=${
+        const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/recruiter-posts/${
             currentUser.signInDetails?.loginId as string
         }`;
-        console.log(url);
+
         const getRecruiterJobsResponse = await fetch(url, {
             method: "GET",
             headers: {
@@ -24,6 +23,7 @@ export async function getRecruiterJobs() {
         });
 
         const data: JobPostItem[] = await getRecruiterJobsResponse.json();
+
         return {
             jobs: data,
             email: currentUser.signInDetails?.loginId as string,

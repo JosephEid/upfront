@@ -140,7 +140,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token := url.QueryEscape(tokenB64)
 
 	magicLink := fmt.Sprintf("%s/magic-link?email=%s&token=%s", request.RequestOrigin, request.Email, token)
-	emailBody := aws.String(fmt.Sprintf(`<h1>Please use the link below to log in:</h1><br/><br/>
+	emailBody := aws.String(fmt.Sprintf(`<h1>You are nearly there! Please use the link below to log in:</h1><br/><br/>
 	<a href='%s'>Log In</a>`, magicLink))
 
 	_, err = h.cipc.AdminUpdateUserAttributes(context.Background(), &cognitoidentityprovider.AdminUpdateUserAttributesInput{

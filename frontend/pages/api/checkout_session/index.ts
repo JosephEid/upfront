@@ -28,7 +28,6 @@ export default async function handler(
                 successURL: `${req.headers.origin}/success`,
                 cancelURL: `${req.headers.origin}/post-job`,
             };
-            console.log(csRequest);
             const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/checkout-session`;
 
             const checkoutSessionResponse = await fetch(url, {

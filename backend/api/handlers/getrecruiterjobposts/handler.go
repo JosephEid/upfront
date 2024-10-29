@@ -2,10 +2,10 @@ package getrecruiterjobposts
 
 import (
 	"context"
-	"encoding/json"
 	"log/slog"
 	"net/http"
 
+	"github.com/a-h/pathvars"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/attributevalue"
 	"github.com/aws/aws-sdk-go-v2/feature/dynamodb/expression"
@@ -32,31 +32,31 @@ func NewHandler(logger *slog.Logger, tableName string, ddbc *dynamodb.Client) (H
 	}, nil
 }
 
-func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var request RecruiterJobPostsRequest
-	err := json.NewDecoder(r.Body).Decode(&request)
+var matcher = pathvars.NewExtractor("*/upfront/recruiter-posts/{email}")
 
-	if err != nil {
-		h.logger.Error("error decoding request body", "error", err)
-		respond.WithError(w, "error decoding request body", http.StatusBadRequest)
-		return
-	}
+func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	jobPosts := []models.JobPostItem{}
 
-	email := r.URL.Query().Get("email")
-
-	if email == "" {
-		h.logger.Error("no email provided")
-		respond.WithError(w, "no email provided", http.StatusBadRequest)
+	pathValues, ok := matcher.Extract(r.URL)
+	if !ok {
+		h.logger.Error("missing parameters in path")
+		respond.WithError(w, "missing parameters in path", http.StatusBadRequest)
 		return
 	}
 
-	keyCondition := expression.KeyEqual(expression.Key("loginEmail"), expression.Value(email))
+	email, ok := pathValues["email"]
+	if !ok || email == "" {
+		h.logger.Error("missing email parameter in path")
+		respond.WithError(w, "missing email parameter in path", http.StatusBadRequest)
+		return
+	}
+
+	h.logger.Info("email extracted", "email", email)
 
 	// Build the expression using key condition and filter
-	builder := expression.NewBuilder().WithKeyCondition(keyCondition)
+	keyEx := expression.Key("loginEmail").Equal(expression.Value(email))
 
-	expr, err := builder.Build()
+	expr, err := expression.NewBuilder().WithKeyCondition(keyEx).Build()
 
 	if err != nil {
 		h.logger.Error("error building expression", "error", err)
@@ -70,8 +70,8 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		ExpressionAttributeNames:  expr.Names(),
 		ExpressionAttributeValues: expr.Values(),
 		KeyConditionExpression:    expr.KeyCondition(),
-		FilterExpression:          expr.Filter(),
 	})
+
 	if err != nil {
 		h.logger.Error("error querying email gsi", "error", err)
 		respond.WithError(w, "error querying email gsi", http.StatusInternalServerError)

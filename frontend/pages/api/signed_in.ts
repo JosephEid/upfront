@@ -4,12 +4,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 export async function isSignedIn(): Promise<boolean> {
     try {
         const signedIn = await getCurrentUser();
-        console.log("signed in!");
         if (signedIn) {
             return true;
         }
     } catch (err) {
-        console.log("not signed in");
         return false;
     }
     return false;

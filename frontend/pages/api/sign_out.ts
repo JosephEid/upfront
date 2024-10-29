@@ -9,7 +9,7 @@ export default async function handler(
         const signOutRes = await signOut();
         res.status(200).json(signOutRes);
     } catch (error) {
-        console.log("failed to sign out");
+        console.log("failed to sign out", error);
         res.status(500);
     }
 }

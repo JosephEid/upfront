@@ -64,7 +64,6 @@ export const getServerSideProps = (async (context) => {
         const challengeResult = await confirmSignIn({
             challengeResponse: props.token,
         });
-        console.log(challengeResult);
     } catch (err) {
         console.log(err);
     }

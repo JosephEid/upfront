@@ -79,7 +79,6 @@ export default function PostJob() {
 
     const formValues = watch() as JobPostFormProps;
 
-    console.log(formValues);
     return (
         <>
             <Head>

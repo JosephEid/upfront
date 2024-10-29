@@ -298,8 +298,9 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 	jobPosts.AddMethod(jsii.String(http.MethodGet), jobPostsGetIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
 
 	recruiterJobPosts := upfront.AddResource(jsii.String("recruiter-posts"), apiResourceOpts)
+	recruiterJobPostsWithEmail := recruiterJobPosts.AddResource(jsii.String("{email}"), apiResourceOpts)
 	recruiterJobPostsGetIntegration := awsapigateway.NewLambdaIntegration(getRecruiterJobsPosts, apiLambdaOpts)
-	recruiterJobPosts.AddMethod(jsii.String(http.MethodGet), recruiterJobPostsGetIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
+	recruiterJobPostsWithEmail.AddMethod(jsii.String(http.MethodGet), recruiterJobPostsGetIntegration, &awsapigateway.MethodOptions{ApiKeyRequired: jsii.Bool(true)})
 
 	startChallengeResource := upfront.AddResource(jsii.String("start-challenge"), apiResourceOpts)
 	startChallengePostIntegration := awsapigateway.NewLambdaIntegration(startChallenge, apiLambdaOpts)

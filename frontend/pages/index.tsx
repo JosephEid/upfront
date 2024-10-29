@@ -66,6 +66,5 @@ export default function Home({ jobs }: { jobs: JobPostItem[] }) {
 
 export const getServerSideProps = (async (context) => {
     const getAllJobsResponse: JobPostItem[] = await getAllJobs();
-    console.log(getAllJobsResponse);
     return { props: { jobs: getAllJobsResponse } };
 }) satisfies GetServerSideProps<{ jobs: JobPostItem[] }>;

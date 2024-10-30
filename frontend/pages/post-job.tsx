@@ -188,7 +188,8 @@ const Step1 = ({
                     value={jobValues.title}
                 />
                 <FormHelperText>
-                    Enter the email you'd like to receive the newsletter on.
+                    Enter the title of the role you are advertising, for
+                    example, Software Engineer.
                 </FormHelperText>
             </FormControl>
             <Divider my="1rem" />
@@ -209,7 +210,8 @@ const Step1 = ({
                     value={jobValues.companyName}
                 />
                 <FormHelperText>
-                    Enter the email you'd like to receive the newsletter on.
+                    Enter the name of the company you are advertising the role
+                    for.
                 </FormHelperText>
             </FormControl>
             <Divider my="1rem" />

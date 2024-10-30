@@ -153,7 +153,27 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create user in cognito user pool as it has been confirmed they have paid for a job posta
+	itemOut := models.JobPostItem{}
+
+	err = attributevalue.UnmarshalMap(out.Attributes, &itemOut)
+
+	if err != nil {
+		h.logger.Error("error unmarshalling update item output", "error", err)
+		respond.WithError(w, "error unmarshalling update item output", http.StatusInternalServerError)
+		return
+	}
+
+	// Create user in cognito user pool as it has been confirmed they have paid for a job post, only if they don't already exist!
+	_, err = h.cipc.AdminGetUser(context.Background(), &cognitoidentityprovider.AdminGetUserInput{
+		UserPoolId: aws.String(h.userPoolId),
+		Username:   aws.String(strings.ToLower(item.LoginEmail)),
+	})
+
+	if err == nil {
+		h.logger.Info("user already exists!", "email", strings.ToLower(item.LoginEmail))
+		respond.WithJSON(w, itemOut, http.StatusOK)
+		return
+	}
 
 	_, err = h.cipc.AdminCreateUser(context.Background(), &cognitoidentityprovider.AdminCreateUserInput{
 		UserPoolId:             aws.String(h.userPoolId),
@@ -188,16 +208,6 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("error confirming user in userpool", "error", err)
 		respond.WithError(w, "error confirming user in userpool", http.StatusInternalServerError)
-		return
-	}
-
-	itemOut := models.JobPostItem{}
-
-	err = attributevalue.UnmarshalMap(out.Attributes, &itemOut)
-
-	if err != nil {
-		h.logger.Error("error creating expression", "error", err)
-		respond.WithError(w, "error creating expression", http.StatusInternalServerError)
 		return
 	}
 

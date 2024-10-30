@@ -212,7 +212,7 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 		Description: jsii.String("lambda responsible for validate that the customer has paid"),
 		InitialPolicy: &[]awsiam.PolicyStatement{
 			awsiam.NewPolicyStatement(&awsiam.PolicyStatementProps{
-				Actions:   jsii.Strings("secretsmanager:GetSecretValue", "cognito-idp:AdminCreateUser", "cognito-idp:AdminSetUserPassword"),
+				Actions:   jsii.Strings("secretsmanager:GetSecretValue", "cognito-idp:AdminCreateUser", "cognito-idp:AdminSetUserPassword", "cognito-idp:AdminGetUser"),
 				Resources: jsii.Strings("*"),
 			}),
 		},

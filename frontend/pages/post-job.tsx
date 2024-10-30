@@ -651,8 +651,10 @@ const Step5 = ({
     setJobValues: React.Dispatch<React.SetStateAction<JobPostFormProps>>;
     setStep: React.Dispatch<React.SetStateAction<number>>;
 }) => {
+    const [isLoading, setIsLoading] = useState(false);
     const handleSubmit = async (event: any) => {
         event.preventDefault();
+        setIsLoading(true);
         const checkoutSessionResponse = await fetch("/api/checkout_session", {
             method: "POST",
             body: JSON.stringify(jobValues || {}),
@@ -662,6 +664,7 @@ const Step5 = ({
             await checkoutSessionResponse.json();
 
         window.location.href = data.url;
+        setIsLoading(false);
     };
     return (
         <form onSubmit={handleSubmit}>
@@ -704,6 +707,7 @@ const Step5 = ({
                     type="submit"
                     color="white"
                     backgroundColor={"upfront.300"}
+                    isLoading={isLoading}
                 >
                     Continue To Payment
                 </Button>

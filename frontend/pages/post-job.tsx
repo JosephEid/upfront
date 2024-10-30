@@ -254,8 +254,8 @@ const Step1 = ({
                 </Center>
 
                 <FormHelperText>
-                    Enter the URL of the logo you'd like displayed on your job
-                    advert, for example:
+                    Enter the URL of the logo you would like displayed on your
+                    job advert, for example:
                     https://en.wikipedia.org/wiki/File:Google_2015_logo.svg
                     <br />
                     Data URLs will also work, for example:
@@ -482,9 +482,12 @@ const Step3 = ({
         setStep(4);
     };
 
-    const onChange = useCallback((value: string) => {
-        setJobValues({ ...jobValues, description: value });
-    }, []);
+    const onChange = useCallback(
+        (value: string) => {
+            setJobValues({ ...jobValues, description: value });
+        },
+        [jobValues, setJobValues]
+    );
 
     const isError = jobValues.description === "";
     return (

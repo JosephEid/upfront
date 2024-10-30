@@ -1,14 +1,15 @@
 import Head from "next/head";
-import React from "react";
+import React, { useState } from "react";
 import {
     Box,
     Button,
     Center,
     Checkbox,
+    Divider,
     FormControl,
     FormErrorMessage,
+    FormHelperText,
     FormLabel,
-    HStack,
     Image,
     Input,
     Select,
@@ -17,15 +18,15 @@ import {
     useRadio,
     useRadioGroup,
 } from "@chakra-ui/react";
+import Markdown from "react-markdown";
 
 const SimpleMdeReact = dynamic(() => import("react-simplemde-editor"), {
     ssr: false,
 });
-import { FC, ReactNode, useCallback, useRef } from "react";
+import { FC, useCallback } from "react";
 import dynamic from "next/dynamic";
 import "easymde/dist/easymde.min.css";
 import Layout from "@/components/Layout";
-import { Control, useController, useForm } from "react-hook-form";
 import { Currency, JobPost } from "@/components/JobPost";
 import { priceFactors } from "@/config";
 import { CheckoutSessionResponse } from "./api/checkout_session";
@@ -34,50 +35,32 @@ export type PlanType = "Standard" | "Premium";
 export type JobPostStatus = "pending" | "active" | "inactive";
 
 export default function PostJob() {
-    const onChange = useCallback((value: string) => {
-        setValue("description", value);
-    }, []);
-
-    const defaultValues: JobPostFormProps = {
+    const [step, setStep] = useState(1);
+    const [jobValues, setJobValues] = useState<JobPostFormProps>({
         companyLogoURL: "",
         companyName: "",
-        companyWebsite: "",
+        companyWebsite: "http://",
         currency: "GBP",
-        howToApply: "",
+        howToApply: "http://",
         location: "",
         description: "",
         maxSalary: 10000,
         minSalary: 5000,
+        minYOE: 0,
         title: "",
         visaSponsorship: false,
         loginEmail: "",
         planDuration: 30,
         planType: "Premium",
+    });
+
+    const stepTitles: Record<number, string> = {
+        1: "Title, Company, Logo and Location",
+        2: "Salary, Years Of Experience and Visa Sponsorship",
+        3: "Job Description",
+        4: "Company/Recruiter Details and How To Apply",
+        5: "Duration and Plan",
     };
-
-    const {
-        register,
-        formState: { errors, isSubmitting },
-        setValue,
-        watch,
-        getValues,
-        handleSubmit,
-        control,
-    } = useForm({ defaultValues: defaultValues });
-
-    async function onSubmit(values: JobPostFormProps) {
-        const checkoutSessionResponse = await fetch("/api/checkout_session", {
-            method: "POST",
-            body: JSON.stringify(values || {}),
-        });
-
-        const data: CheckoutSessionResponse =
-            await checkoutSessionResponse.json();
-
-        window.location.href = data.url;
-    }
-
-    const formValues = watch() as JobPostFormProps;
 
     return (
         <>
@@ -111,472 +94,638 @@ export default function PostJob() {
                     All job postings must contain a salary range.
                 </Text>
                 <Center>
-                    <JobPost {...formValues} />
+                    <JobPost {...jobValues} />
                 </Center>
-                <Box my="1rem">
-                    <form onSubmit={handleSubmit(onSubmit)}>
-                        <Stack
-                            direction={["column", "row"]}
-                            width={"100%"}
-                            gap={{ base: 0, md: "0.5rem" }}
-                        >
-                            <FormControl
-                                width={{ base: "100%", md: "60%" }}
-                                isInvalid={errors.title !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel htmlFor="title" display={"none"}>
-                                    Job Title
-                                </FormLabel>
-                                <Input
-                                    size={"lg"}
-                                    id="title"
-                                    {...register("title", {
-                                        required: "This is required",
-                                        minLength: {
-                                            value: 2,
-                                            message:
-                                                "Minimum length should be 2",
-                                        },
-                                        maxLength: {
-                                            value: 45,
-                                            message:
-                                                "Maximum length is 50 characters",
-                                        },
-                                    })}
-                                    maxLength={45}
-                                    type="text"
-                                    placeholder="Job Title"
-                                />
-                                <FormErrorMessage>
-                                    {errors.title?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <FormControl
-                                width={{ base: "100%", md: "40%" }}
-                                isInvalid={errors.location !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel htmlFor="location" display={"none"}>
-                                    Job Location
-                                </FormLabel>
-                                <Input
-                                    size={"lg"}
-                                    id="location"
-                                    {...register("location", {
-                                        required: "This is required",
-                                        minLength: {
-                                            value: 2,
-                                            message:
-                                                "Minimum length should be 2",
-                                        },
-                                        maxLength: {
-                                            value: 40,
-                                            message:
-                                                "Maximum length is 40 characters",
-                                        },
-                                    })}
-                                    type="text"
-                                    maxLength={40}
-                                    placeholder="Job Location"
-                                />
-                                <FormErrorMessage>
-                                    {errors.location?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                        </Stack>
-                        <Stack
-                            direction={["column", "row"]}
-                            width={"100%"}
-                            gap={{ base: 0, md: "0.5rem" }}
-                        >
-                            <FormControl
-                                width={{ base: "100%", md: "40%" }}
-                                isInvalid={errors.minSalary !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel htmlFor="minSalary" display={"none"}>
-                                    Minimum Salary
-                                </FormLabel>
-                                <Input
-                                    size={"lg"}
-                                    type="number"
-                                    placeholder="Min Annual Salary"
-                                    id="minSalary"
-                                    {...register("minSalary", {
-                                        required: "This is required",
-                                        valueAsNumber: true,
-                                    })}
-                                />
-                                <FormErrorMessage>
-                                    {errors.minSalary?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <FormControl
-                                width={{ base: "100%", md: "40%" }}
-                                isInvalid={errors.maxSalary !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel htmlFor="maxSalary" display={"none"}>
-                                    Maximum Salary
-                                </FormLabel>
-                                <Input
-                                    size={"lg"}
-                                    type="number"
-                                    placeholder="Max Annual Salary"
-                                    id="maxSalary"
-                                    {...register("maxSalary", {
-                                        required: "This is required",
-                                        valueAsNumber: true,
-                                    })}
-                                />
-                                <FormErrorMessage>
-                                    {errors.maxSalary?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <FormControl
-                                width={{ base: "100%", md: "20%" }}
-                                isInvalid={errors.currency !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel htmlFor="currency" display={"none"}>
-                                    Currency
-                                </FormLabel>
-                                <Select
-                                    size={"lg"}
-                                    id="currency"
-                                    {...register("currency", {
-                                        required: "This is required",
-                                    })}
-                                >
-                                    <option>GBP</option>
-                                    <option>USD</option>
-                                    <option>EUR</option>
-                                    <option>AUD</option>
-                                    <option>CAD</option>
-                                    <option>SGD</option>
-                                    <option>CHF</option>
-                                    <option>INR</option>
-                                    <option>JPY</option>
-                                </Select>
-                                <FormErrorMessage>
-                                    {errors.currency?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                        </Stack>
-                        <Stack
-                            direction={["column", "row"]}
-                            width={"100%"}
-                            gap={{ base: 0, md: "0.5rem" }}
-                        >
-                            <FormControl
-                                width={{ base: "100%", md: "40%" }}
-                                isInvalid={errors.companyName !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel
-                                    htmlFor="companyName"
-                                    display={"none"}
-                                >
-                                    Company Name
-                                </FormLabel>
-                                <Input
-                                    size={"lg"}
-                                    id="companyName"
-                                    {...register("companyName", {
-                                        required: "This is required",
-                                        minLength: {
-                                            value: 2,
-                                            message:
-                                                "Minimum length should be 2",
-                                        },
-                                    })}
-                                    type="text"
-                                    placeholder="Company Name"
-                                />
-                                <FormErrorMessage>
-                                    {errors.companyName?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <FormControl
-                                width={{ base: "100%", md: "60%" }}
-                                isInvalid={errors.companyWebsite !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel
-                                    htmlFor="companyWebsite"
-                                    display={"none"}
-                                >
-                                    Company Website
-                                </FormLabel>
-                                <Input
-                                    size={"lg"}
-                                    id="companyWebsite"
-                                    {...register("companyWebsite", {
-                                        required: "This is required",
-                                        minLength: {
-                                            value: 2,
-                                            message:
-                                                "Minimum length should be 2",
-                                        },
-                                    })}
-                                    type="text"
-                                    placeholder="Company Website"
-                                    mb="0.5rem"
-                                />
-                                <FormErrorMessage>
-                                    {errors.companyWebsite?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                        </Stack>
-                        <FormControl
-                            isInvalid={errors.companyLogoURL !== undefined}
-                            mb={"1rem"}
-                        >
-                            <FormLabel htmlFor="companyLogoURL" display="none">
-                                Company Logo URL
-                            </FormLabel>
-                            <HStack>
-                                <Input
-                                    size={"lg"}
-                                    id="companyLogoURL"
-                                    {...register("companyLogoURL", {
-                                        minLength: {
-                                            value: 2,
-                                            message:
-                                                "Minimum length should be 2",
-                                        },
-                                    })}
-                                    type="url"
-                                    placeholder="Company Logo URL"
-                                    width={{ base: "100%", md: "50%" }}
-                                />
-                                <Box
-                                    minWidth={{ base: "50px", md: "100px" }}
-                                    minHeight={{ base: "50px", md: "100px" }}
-                                    maxWidth={{ base: "50px", md: "100px" }}
-                                    maxHeight={{ base: "50px", md: "100px" }}
-                                    margin="1rem"
-                                >
-                                    {formValues.companyLogoURL === "" ? (
-                                        <Text>Logo Preview</Text>
-                                    ) : (
-                                        <Image
-                                            src={formValues.companyLogoURL}
-                                            alt="Company logo"
-                                            minWidth={{
-                                                base: "50px",
-                                                md: "100px",
-                                            }}
-                                            minHeight={{
-                                                base: "50px",
-                                                md: "100px",
-                                            }}
-                                            borderRadius={"5px"}
-                                        />
-                                    )}
-                                </Box>
-                            </HStack>
+                <Divider my="1rem" />
+                <Box
+                    p="1rem"
+                    my="1rem"
+                    borderRadius={"1px"}
+                    borderColor={"upfront.300"}
+                >
+                    <Text
+                        my="1rem"
+                        fontWeight={700}
+                        fontSize={"2rem"}
+                        mb="1rem"
+                    >
+                        Step {step} of 5 - {stepTitles[step]}
+                    </Text>
+                    {step === 1 && (
+                        <Step1
+                            jobValues={jobValues}
+                            setJobValues={setJobValues}
+                            setStep={setStep}
+                        />
+                    )}
+                    {step === 2 && (
+                        <Step2
+                            jobValues={jobValues}
+                            setJobValues={setJobValues}
+                            setStep={setStep}
+                        />
+                    )}
 
-                            <FormErrorMessage>
-                                {errors.companyLogoURL?.message?.toString()}
-                            </FormErrorMessage>
-                        </FormControl>
+                    {step === 3 && (
+                        <Step3
+                            jobValues={jobValues}
+                            setJobValues={setJobValues}
+                            setStep={setStep}
+                        />
+                    )}
 
-                        <FormControl
-                            isInvalid={errors.description !== undefined}
-                            mb={"1rem"}
-                        >
-                            <FormLabel htmlFor="description" display={"none"}>
-                                Description
-                            </FormLabel>
-                            <SimpleMdeReact
-                                id="description"
-                                {...register("description", {
-                                    required: "This is required",
-                                })}
-                                style={{
-                                    width: "100%",
-                                }}
-                                onChange={onChange}
-                            />
-                            <FormErrorMessage>
-                                {errors.description?.message?.toString()}
-                            </FormErrorMessage>
-                        </FormControl>
+                    {step === 4 && (
+                        <Step4
+                            jobValues={jobValues}
+                            setJobValues={setJobValues}
+                            setStep={setStep}
+                        />
+                    )}
 
-                        <FormControl
-                            isInvalid={errors.visaSponsorship !== undefined}
-                            mb={"1rem"}
-                        >
-                            <FormLabel
-                                htmlFor="visaSponsorship"
-                                display={"none"}
-                            >
-                                Visa Sponsorship
-                            </FormLabel>
-                            <Checkbox
-                                size={"lg"}
-                                id="visaSponsorship"
-                                {...register("visaSponsorship", {})}
-                            >
-                                VISA Sponsorship offered?
-                            </Checkbox>
-                        </FormControl>
-
-                        <FormControl
-                            isInvalid={errors.howToApply !== undefined}
-                            mb={"1rem"}
-                        >
-                            <FormLabel htmlFor="howToApply" display={"none"}>
-                                How To Apply
-                            </FormLabel>
-                            <Input
-                                size="lg"
-                                type="text"
-                                id="howToApply"
-                                placeholder="How to apply (URL)"
-                                {...register("howToApply", {
-                                    required: "This is required",
-                                    minLength: {
-                                        value: 2,
-                                        message: "Minimum length should be 2",
-                                    },
-                                })}
-                            />
-                            <FormErrorMessage>
-                                {errors.howToApply?.message?.toString()}
-                            </FormErrorMessage>
-                        </FormControl>
-                        <FormControl
-                            isInvalid={errors.loginEmail !== undefined}
-                            mb={"1rem"}
-                        >
-                            <FormLabel htmlFor="yourEmail" display={"none"}>
-                                Your Email
-                            </FormLabel>
-                            <Input
-                                size="lg"
-                                type="email"
-                                placeholder="Your email (will be used to log in)"
-                                id="loginEmail"
-                                {...register("loginEmail", {
-                                    required: "This is required",
-                                    minLength: {
-                                        value: 2,
-                                        message: "Minimum length should be 2",
-                                    },
-                                })}
-                            />
-                            <FormErrorMessage>
-                                {errors.loginEmail?.message?.toString()}
-                            </FormErrorMessage>
-                        </FormControl>
-                        <Center>
-                            <JobPost {...formValues} />
-                        </Center>
-                        <Box
-                            my={"2rem"}
-                            background={"upfront.300"}
-                            color="white"
-                            padding={"1rem"}
-                            borderRadius="5px"
-                            fontWeight={800}
-                            boxShadow={"lg"}
-                        >
-                            <Text fontSize={"2rem"} my="1rem">
-                                Pricing plans
-                            </Text>
-                            <Text fontSize={"1.5rem"} my="1rem">
-                                Please select how long you&apos;d like to
-                                advertise your Job with us:
-                            </Text>
-                            <FormControl
-                                width={{ base: "100%", md: "30%" }}
-                                isInvalid={errors.planDuration !== undefined}
-                                mb={"1rem"}
-                            >
-                                <FormLabel
-                                    htmlFor="planDuration"
-                                    display={"none"}
-                                >
-                                    Plan Duration
-                                </FormLabel>
-                                <Select
-                                    size={"lg"}
-                                    id="planDuration"
-                                    background={"white"}
-                                    color="black"
-                                    width={{ base: "100%" }}
-                                    {...register("planDuration", {
-                                        required: "This is required",
-                                        valueAsNumber: true,
-                                    })}
-                                >
-                                    {[1, 2, 3, 4, 5, 6].map((x) => {
-                                        return (
-                                            <option key={x * 30} value={x * 30}>
-                                                {x * 30} Days
-                                            </option>
-                                        );
-                                    })}
-                                </Select>
-                                <FormErrorMessage>
-                                    {errors.planDuration?.message?.toString()}
-                                </FormErrorMessage>
-                            </FormControl>
-                            <PlanTypes
-                                control={control}
-                                duration={getValues("planDuration")}
-                            />
-                            <Center>
-                                <Button
-                                    size={"lg"}
-                                    fontSize={"1.5rem"}
-                                    fontWeight={600}
-                                    color={"black"}
-                                    _hover={{
-                                        bg: "upfront.200",
-                                    }}
-                                    type="submit"
-                                    bg="white"
-                                    isLoading={isSubmitting}
-                                >
-                                    Post Job
-                                </Button>
-                            </Center>
-                        </Box>
-                    </form>
+                    {step === 5 && (
+                        <Step5
+                            jobValues={jobValues}
+                            setJobValues={setJobValues}
+                            setStep={setStep}
+                        />
+                    )}
                 </Box>
             </Layout>
         </>
     );
 }
 
-const PlanTypes: FC<{
-    control: Control<JobPostFormProps, any>;
-    duration: number;
-}> = ({ control, duration }) => {
-    const {
-        field,
-        formState: { errors },
-    } = useController({
-        control,
-        name: "planType",
-        rules: { required: { value: true, message: "Required field" } },
-    });
-    const { getRootProps, getRadioProps } = useRadioGroup({
-        name: "planType",
-        onChange: field.onChange,
-        value: field.value,
-    });
+const Step1 = ({
+    jobValues,
+    setJobValues,
+    setStep,
+}: {
+    jobValues: JobPostFormProps;
+    setJobValues: React.Dispatch<React.SetStateAction<JobPostFormProps>>;
+    setStep: React.Dispatch<React.SetStateAction<number>>;
+}) => {
+    const handleSubmit = (event: any) => {
+        event.preventDefault();
+        setStep(2);
+    };
+    const [isError, setIsError] = useState(false);
+    return (
+        <form onSubmit={handleSubmit}>
+            <FormControl isRequired>
+                <FormLabel>Job Title</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="title"
+                    maxLength={45}
+                    type="text"
+                    placeholder="Job Title"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            title: e.target.value,
+                        })
+                    }
+                    value={jobValues.title}
+                />
+                <FormHelperText>
+                    Enter the email you'd like to receive the newsletter on.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
 
-    const group = getRootProps();
+            <FormControl isRequired>
+                <FormLabel>Company Name</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="companyName"
+                    type="text"
+                    placeholder="Company Name"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            companyName: e.target.value,
+                        })
+                    }
+                    value={jobValues.companyName}
+                />
+                <FormHelperText>
+                    Enter the email you'd like to receive the newsletter on.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+
+            <FormControl isInvalid={isError} isRequired>
+                <FormLabel>Company Logo URL</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="companyLogoURL"
+                    type="url"
+                    placeholder="Company Logo URL"
+                    onChange={(e) => {
+                        setIsError(false);
+                        setJobValues({
+                            ...jobValues,
+                            companyLogoURL: e.target.value,
+                        });
+                    }}
+                    value={jobValues.companyLogoURL}
+                />
+                <Center my="1rem">
+                    {jobValues.companyLogoURL === "" ? (
+                        <Text>Logo Preview</Text>
+                    ) : (
+                        <Image
+                            src={jobValues.companyLogoURL}
+                            alt="Company logo"
+                            maxWidth={{
+                                base: "50px",
+                                md: "100px",
+                            }}
+                            maxHeight={{
+                                base: "50px",
+                                md: "100px",
+                            }}
+                            borderRadius={"5px"}
+                            onError={() => setIsError(true)}
+                        />
+                    )}
+                </Center>
+
+                <FormHelperText>
+                    Enter the URL of the logo you'd like displayed on your job
+                    advert, for example:
+                    https://en.wikipedia.org/wiki/File:Google_2015_logo.svg
+                    <br />
+                    Data URLs will also work, for example:
+                    data:image/png;base64,iVBORw0KGgoAAAANSUh...
+                </FormHelperText>
+                {isError && (
+                    <FormErrorMessage>
+                        Could not find image, please use a valid URL!
+                    </FormErrorMessage>
+                )}
+            </FormControl>
+            <Divider my={"1rem"} />
+            <FormControl isRequired>
+                <FormLabel>Location</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="location"
+                    type="text"
+                    placeholder="Location"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            location: e.target.value.toLocaleUpperCase(),
+                        })
+                    }
+                    value={jobValues.location}
+                />
+                <FormHelperText>
+                    Enter the Location of where the Job will be located, feel
+                    free to put remote if the job can be done from anywhere!
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+            <Stack direction={["column", "row"]} width={"100%"} my="1rem">
+                <Button
+                    type="submit"
+                    color="white"
+                    backgroundColor={"upfront.300"}
+                    disabled={isError}
+                >
+                    Continue
+                </Button>
+            </Stack>
+        </form>
+    );
+};
+
+const Step2 = ({
+    jobValues,
+    setJobValues,
+    setStep,
+}: {
+    jobValues: JobPostFormProps;
+    setJobValues: React.Dispatch<React.SetStateAction<JobPostFormProps>>;
+    setStep: React.Dispatch<React.SetStateAction<number>>;
+}) => {
+    const handleSubmit = (event: any) => {
+        event.preventDefault();
+        setStep(3);
+    };
+
+    const isError = jobValues.minSalary > jobValues.maxSalary;
 
     return (
-        <FormControl isRequired={true} isInvalid={!!errors.planType} mb={6}>
-            <FormLabel display={"none"}>planType</FormLabel>
-            <Stack direction={["column", "row"]} width={"100%"} {...group}>
+        <form onSubmit={handleSubmit}>
+            <FormControl isRequired>
+                <FormLabel>Minimum Salary Offered</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="minSalary"
+                    maxLength={45}
+                    type="number"
+                    placeholder="Minimum Salary"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            minSalary: +e.target.value,
+                        })
+                    }
+                    value={jobValues.minSalary}
+                />
+                <FormHelperText>
+                    Enter the minimum salary you would offer for this role,
+                    regardless of experience.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+
+            <FormControl isInvalid={isError} isRequired>
+                <FormLabel>Maximum Salary Offered</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="maxSalary"
+                    maxLength={45}
+                    type="number"
+                    placeholder="Maximum Salary"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            maxSalary: +e.target.value,
+                        })
+                    }
+                    value={jobValues.maxSalary}
+                />
+                {!isError ? (
+                    <FormHelperText>
+                        Enter the maximum salary you would offer for this role,
+                        regardless of experience.
+                    </FormHelperText>
+                ) : (
+                    <FormErrorMessage>
+                        Maximum salary must be greater than or equal to minimum
+                        salary!
+                    </FormErrorMessage>
+                )}
+            </FormControl>
+            <Divider my="1rem" />
+
+            <FormControl isRequired>
+                <FormLabel>Currency</FormLabel>
+                <Select
+                    size={"lg"}
+                    id="currency"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            currency: e.target.value as Currency,
+                        })
+                    }
+                >
+                    <option>GBP</option>
+                    <option>USD</option>
+                    <option>EUR</option>
+                    <option>AUD</option>
+                    <option>CAD</option>
+                    <option>SGD</option>
+                    <option>CHF</option>
+                    <option>INR</option>
+                    <option>JPY</option>
+                </Select>
+                <FormHelperText>
+                    Choose the currency for which the salary will be paid in.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+
+            <FormControl isRequired>
+                <FormLabel>Minimum Years of Experience Required</FormLabel>
+                <Select
+                    size={"lg"}
+                    id="minYOE"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            minYOE: +e.target.value.replace("+", ""),
+                        })
+                    }
+                >
+                    <option>0+</option>
+                    <option>1+</option>
+                    <option>2+</option>
+                    <option>3+</option>
+                    <option>4+</option>
+                    <option>5+</option>
+                    <option>6+</option>
+                    <option>7+</option>
+                    <option>8+</option>
+                    <option>9+</option>
+                    <option>10+</option>
+                    <option>11+</option>
+                    <option>12+</option>
+                </Select>
+                <FormHelperText>
+                    Enter the minimum years of expired required to be considered
+                    for the role.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+
+            <FormControl>
+                <Checkbox
+                    size={"lg"}
+                    id="visaSponsorship"
+                    onChange={(e) => {
+                        setJobValues({
+                            ...jobValues,
+                            visaSponsorship: e.target.checked,
+                        });
+                    }}
+                >
+                    VISA Sponsorship offered?
+                </Checkbox>
+                <FormHelperText>
+                    Check this box if you can offer VISA Sponsorship.
+                </FormHelperText>
+            </FormControl>
+
+            <Divider my="1rem" />
+            <Stack direction={["column", "row"]} width={"100%"} my="1rem">
+                <Button onClick={() => setStep(1)}>Back</Button>
+                <Button
+                    type="submit"
+                    color="white"
+                    backgroundColor={"upfront.300"}
+                >
+                    Continue
+                </Button>
+            </Stack>
+        </form>
+    );
+};
+
+const Step3 = ({
+    jobValues,
+    setJobValues,
+    setStep,
+}: {
+    jobValues: JobPostFormProps;
+    setJobValues: React.Dispatch<React.SetStateAction<JobPostFormProps>>;
+    setStep: React.Dispatch<React.SetStateAction<number>>;
+}) => {
+    const handleSubmit = (event: any) => {
+        event.preventDefault();
+        setStep(4);
+    };
+
+    const onChange = useCallback((value: string) => {
+        setJobValues({ ...jobValues, description: value });
+    }, []);
+
+    const isError = jobValues.description === "";
+    return (
+        <form onSubmit={handleSubmit}>
+            <FormControl isInvalid={isError} isRequired>
+                <FormLabel>Job Post Description</FormLabel>
+
+                <SimpleMdeReact
+                    id="description"
+                    style={{
+                        width: "100%",
+                    }}
+                    onChange={onChange}
+                    value={jobValues.description}
+                />
+                <FormHelperText>
+                    Enter the job description, the above editor allows you to
+                    write in markdown.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+            <FormLabel>Preview</FormLabel>
+            <Box
+                border="1px"
+                borderRadius={"5px"}
+                borderColor={"gray.200"}
+                padding={"2rem"}
+            >
+                <Text>
+                    <Markdown>{jobValues.description}</Markdown>
+                </Text>
+            </Box>
+            <Stack direction={["column", "row"]} width={"100%"} my="1rem">
+                <Button onClick={() => setStep(2)}>Back</Button>
+                <Button
+                    type="submit"
+                    color="white"
+                    backgroundColor={"upfront.300"}
+                    isDisabled={isError}
+                >
+                    Continue
+                </Button>
+            </Stack>
+        </form>
+    );
+};
+
+const Step4 = ({
+    jobValues,
+    setJobValues,
+    setStep,
+}: {
+    jobValues: JobPostFormProps;
+    setJobValues: React.Dispatch<React.SetStateAction<JobPostFormProps>>;
+    setStep: React.Dispatch<React.SetStateAction<number>>;
+}) => {
+    const handleSubmit = (event: any) => {
+        event.preventDefault();
+        setStep(5);
+    };
+    return (
+        <form onSubmit={handleSubmit}>
+            <FormControl
+                isInvalid={jobValues.companyWebsite === "http://"}
+                isRequired
+            >
+                <FormLabel>Company Website</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="companyWebsite"
+                    maxLength={45}
+                    type="url"
+                    placeholder="http://example.com"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            companyWebsite: e.target.value,
+                        })
+                    }
+                    value={
+                        jobValues.companyWebsite === ""
+                            ? "http://"
+                            : jobValues.companyWebsite
+                    }
+                />
+                <FormHelperText>
+                    Enter your companies website. Please include either the
+                    http:// or https:// prefix.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+
+            <FormControl
+                isInvalid={jobValues.howToApply === "http://"}
+                isRequired
+            >
+                <FormLabel>How To Apply</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="howToApply"
+                    type="url"
+                    placeholder="http://example.com/apply"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            howToApply: e.target.value,
+                        })
+                    }
+                    value={
+                        jobValues.howToApply === ""
+                            ? "http://"
+                            : jobValues.howToApply
+                    }
+                />
+                <FormHelperText>
+                    Enter the URL the applicant should be directed to when they
+                    click apply. Please include either the http:// or https://
+                    prefix.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+
+            <FormControl isRequired>
+                <FormLabel>Recruiter Email</FormLabel>
+                <Input
+                    size={"lg"}
+                    id="loginEmail"
+                    type="text"
+                    placeholder="Recruiter Email"
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            loginEmail: e.target.value,
+                        })
+                    }
+                    value={jobValues.loginEmail}
+                />
+                <FormHelperText>
+                    Enter the email address you (the recruiter/hiring manager)
+                    will use to log in to Upfront and manage your job posts.
+                </FormHelperText>
+            </FormControl>
+            <Divider my="1rem" />
+            <Stack direction={["column", "row"]} width={"100%"} my="1rem">
+                <Button onClick={() => setStep(3)}>Back</Button>
+                <Button
+                    type="submit"
+                    color="white"
+                    backgroundColor={"upfront.300"}
+                >
+                    Continue
+                </Button>
+            </Stack>
+        </form>
+    );
+};
+
+const Step5 = ({
+    jobValues,
+    setJobValues,
+    setStep,
+}: {
+    jobValues: JobPostFormProps;
+    setJobValues: React.Dispatch<React.SetStateAction<JobPostFormProps>>;
+    setStep: React.Dispatch<React.SetStateAction<number>>;
+}) => {
+    const handleSubmit = async (event: any) => {
+        event.preventDefault();
+        const checkoutSessionResponse = await fetch("/api/checkout_session", {
+            method: "POST",
+            body: JSON.stringify(jobValues || {}),
+        });
+
+        const data: CheckoutSessionResponse =
+            await checkoutSessionResponse.json();
+
+        window.location.href = data.url;
+    };
+    return (
+        <form onSubmit={handleSubmit}>
+            <FormControl isRequired>
+                <FormLabel>Plan Duration</FormLabel>
+                <Select
+                    size={"lg"}
+                    id="planDuration"
+                    background={"white"}
+                    color="black"
+                    width={{ base: "100%" }}
+                    onChange={(e) =>
+                        setJobValues({
+                            ...jobValues,
+                            planDuration: +e.target.value,
+                        })
+                    }
+                    value={jobValues.planDuration}
+                >
+                    {[1, 2, 3, 4, 5, 6].map((x) => {
+                        return (
+                            <option key={x * 30} value={x * 30}>
+                                {x * 30} Days
+                            </option>
+                        );
+                    })}
+                </Select>
+            </FormControl>
+            <Divider my="1rem" />
+            <PlanTypes
+                duration={jobValues.planDuration}
+                jobValues={jobValues}
+                setJobValues={setJobValues}
+            />
+
+            <Divider my="1rem" />
+            <Stack direction={["column", "row"]} width={"100%"} my="1rem">
+                <Button onClick={() => setStep(4)}>Back</Button>
+                <Button
+                    type="submit"
+                    color="white"
+                    backgroundColor={"upfront.300"}
+                >
+                    Continue To Payment
+                </Button>
+            </Stack>
+        </form>
+    );
+};
+
+const PlanTypes: FC<{
+    jobValues: JobPostFormProps;
+    setJobValues: React.Dispatch<React.SetStateAction<JobPostFormProps>>;
+    duration: number;
+}> = ({ jobValues, setJobValues, duration }) => {
+    const { getRadioProps } = useRadioGroup({
+        name: "planType",
+        onChange: (next) =>
+            setJobValues({ ...jobValues, planType: next as PlanType }),
+        value: jobValues.planType,
+    });
+
+    return (
+        <FormControl isRequired>
+            <FormLabel>Plan Type</FormLabel>
+            <Stack direction={["column", "row"]} width={"100%"}>
                 {["Standard" as PlanType, "Premium" as PlanType].map(
                     (value: PlanType) => {
                         const radio = getRadioProps({ value });
@@ -593,7 +742,6 @@ const PlanTypes: FC<{
                     }
                 )}
             </Stack>
-            <FormErrorMessage>{errors.planType?.message}</FormErrorMessage>
         </FormControl>
     );
 };
@@ -621,9 +769,9 @@ const RadioCard: FC<any> = (props) => {
                 cursor="pointer"
                 borderWidth="1px"
                 _checked={{
-                    bg: "pink.500",
+                    bg: "upfront.300",
                     color: "white",
-                    borderColor: "pink.500",
+                    borderColor: "upfront.300",
                 }}
                 _focus={{
                     boxShadow: "outline",
@@ -654,8 +802,9 @@ export interface JobPostFormProps {
     location: string;
     maxSalary: number;
     minSalary: number;
+    minYOE: number;
     title: string;
-    visaSponsorship: false;
+    visaSponsorship: boolean;
     loginEmail: string;
     planDuration: number;
     planType: PlanType;

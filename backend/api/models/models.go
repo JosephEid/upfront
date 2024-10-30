@@ -41,6 +41,7 @@ type JobPostFormProps struct {
 	Location        string   `json:"location" dynamodbav:"location"`
 	MaxSalary       int      `json:"maxSalary" dynamodbav:"maxSalary"`
 	MinSalary       int      `json:"minSalary" dynamodbav:"minSalary"`
+	MinYOE          int      `json:"minYOE" dynamodbav:"minYOE"`
 	Title           string   `json:"title" dynamodbav:"title"`
 	VisaSponsorship bool     `json:"visaSponsorship" dynamodbav:"visaSponsorship"`
 	LoginEmail      string   `json:"loginEmail" dynamodbav:"loginEmail"`

@@ -59,7 +59,7 @@ export default function Dashboard(props: DashboardProps) {
                     Dashboard for {props.email}
                 </Text>
                 <Text fontSize={"2rem"} fontWeight={700} my="1rem">
-                    Jobs you've posted
+                    Jobs you&apos;ve posted
                 </Text>
                 <TableContainer>
                     <Table>

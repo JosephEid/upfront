@@ -1,29 +1,12 @@
 import Head from "next/head";
-import { Box, Button, Center, Divider, Input, Text } from "@chakra-ui/react";
+import { Center, Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { GetServerSideProps } from "next";
-import { signIn, confirmSignIn, getCurrentUser } from "aws-amplify/auth";
-import { Amplify } from "aws-amplify";
+import { isSignedIn } from "./api/signed_in";
+import { PageProps } from ".";
 
-interface MagicLinkProps {
-    email: string;
-    token: string;
-}
-
-Amplify.configure({
-    Auth: {
-        Cognito: {
-            userPoolId: "eu-west-2_Cm0yER0fG",
-            userPoolClientId: "p63epfbef86asirih4ec51f8",
-            loginWith: {
-                email: true,
-            },
-        },
-    },
-});
-
-export default function Login(props: MagicLinkProps) {
+export default function Login(props: PageProps) {
     return (
         <>
             <Head>
@@ -41,7 +24,7 @@ export default function Login(props: MagicLinkProps) {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <Layout>
+            <Layout signedIn={props.signedIn}>
                 <Center>
                     <Text>Login successful, redirecting to dashboard...</Text>
                 </Center>
@@ -50,23 +33,8 @@ export default function Login(props: MagicLinkProps) {
     );
 }
 
-export const getServerSideProps = (async (context) => {
-    const props: MagicLinkProps = {
-        email: context.query.email as string,
-        token: context.query.token as string,
-    };
+export const getServerSideProps = (async (_) => {
+    const signedIn = await isSignedIn();
 
-    const cognitoUser = await signIn({
-        username: props.email,
-        options: { authFlowType: "CUSTOM_WITHOUT_SRP" },
-    });
-    try {
-        const challengeResult = await confirmSignIn({
-            challengeResponse: props.token,
-        });
-    } catch (err) {
-        console.log(err);
-    }
-
-    return { props: props };
-}) satisfies GetServerSideProps<MagicLinkProps>;
+    return { props: { signedIn } };
+}) satisfies GetServerSideProps<PageProps>;

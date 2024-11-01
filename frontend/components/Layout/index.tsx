@@ -9,7 +9,13 @@ const abel = Abel({
     weight: "400",
 });
 
-const Layout = ({ children }: { children: ReactNode }) => {
+const Layout = ({
+    children,
+    signedIn,
+}: {
+    children: ReactNode;
+    signedIn: boolean;
+}) => {
     return (
         <main>
             <Container
@@ -17,7 +23,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                 className={`${abel.className} layout`}
                 minHeight={"100%"}
             >
-                <Navbar />
+                <Navbar signedIn={signedIn} />
                 <Container
                     maxWidth={{ base: "100%", md: "90%", lg: "80%" }}
                     px={{ base: 0, md: "1rem" }}

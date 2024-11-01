@@ -2,20 +2,22 @@ import { JobPostFormProps } from "@/pages/post-job";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export interface JobPostItem extends JobPostFormProps {
-    PK: string;
-    SK: string;
-    jobID: string;
-    sessionID: string;
-    createdAt: string;
-    updatedAt: string;
-    status: Status;
+    PK?: string;
+    SK?: string;
+    jobID?: string;
+    sessionID?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    expiresAt?: string;
+    status?: Status;
+    clickedApplyCount?: number;
 }
 
 type Status = "Active" | "Expired" | "PendingPayment";
 
 export async function getCheckoutSession(id: string) {
     try {
-        const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
+        const url = `https://m7kkswah50.execute-api.eu-west-2.amazonaws.com/prod/upfront/validate-purchase/${id}`;
         const validateSessionResponse = await fetch(url, {
             method: "GET",
             headers: {

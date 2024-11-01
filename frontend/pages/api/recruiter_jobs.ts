@@ -10,7 +10,7 @@ export interface getRecruiterJobsResponse {
 export async function getRecruiterJobs() {
     try {
         const currentUser = await getCurrentUser();
-        const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/recruiter-posts/${
+        const url = `https://m7kkswah50.execute-api.eu-west-2.amazonaws.com/prod/upfront/recruiter-posts/${
             currentUser.signInDetails?.loginId as string
         }`;
 

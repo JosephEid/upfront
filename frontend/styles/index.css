@@ -8,3 +8,7 @@
 .CodeMirror-scroll {
     min-height: 200px !important;
 }
+
+.job-description > ul {
+    padding: 1rem;
+}

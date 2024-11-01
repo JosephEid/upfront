@@ -6,12 +6,15 @@ import {
     Center,
     Checkbox,
     Divider,
+    Fade,
     FormControl,
     FormErrorMessage,
     FormHelperText,
     FormLabel,
     Image,
     Input,
+    Radio,
+    RadioGroup,
     Select,
     Stack,
     Text,
@@ -30,18 +33,22 @@ import Layout from "@/components/Layout";
 import { Currency, JobPost } from "@/components/JobPost";
 import { priceFactors } from "@/config";
 import { CheckoutSessionResponse } from "./api/checkout_session";
+import { PageProps } from ".";
+import { isSignedIn } from "./api/signed_in";
+import { GetServerSideProps } from "next";
+import { JobPostItem } from "./api/checkout_session/[id]";
 
 export type PlanType = "Standard" | "Premium";
 export type JobPostStatus = "pending" | "active" | "inactive";
 
-export default function PostJob() {
+export default function PostJob(props: PageProps) {
     const [step, setStep] = useState(1);
-    const [jobValues, setJobValues] = useState<JobPostFormProps>({
+    const [jobValues, setJobValues] = useState<JobPostItem>({
         companyLogoURL: "",
         companyName: "",
         companyWebsite: "http://",
         currency: "GBP",
-        howToApply: "http://",
+        howToApply: "",
         location: "",
         description: "",
         maxSalary: 10000,
@@ -79,7 +86,7 @@ export default function PostJob() {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <Layout>
+            <Layout signedIn={props.signedIn}>
                 <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
                     Create a Job Post.
                 </Text>
@@ -112,48 +119,64 @@ export default function PostJob() {
                         Step {step} of 5 - {stepTitles[step]}
                     </Text>
                     {step === 1 && (
-                        <Step1
-                            jobValues={jobValues}
-                            setJobValues={setJobValues}
-                            setStep={setStep}
-                        />
+                        <Fade in={step === 1}>
+                            <Step1
+                                jobValues={jobValues}
+                                setJobValues={setJobValues}
+                                setStep={setStep}
+                            />
+                        </Fade>
                     )}
                     {step === 2 && (
-                        <Step2
-                            jobValues={jobValues}
-                            setJobValues={setJobValues}
-                            setStep={setStep}
-                        />
+                        <Fade in={step === 2}>
+                            <Step2
+                                jobValues={jobValues}
+                                setJobValues={setJobValues}
+                                setStep={setStep}
+                            />
+                        </Fade>
                     )}
 
                     {step === 3 && (
-                        <Step3
-                            jobValues={jobValues}
-                            setJobValues={setJobValues}
-                            setStep={setStep}
-                        />
+                        <Fade in={step === 3}>
+                            <Step3
+                                jobValues={jobValues}
+                                setJobValues={setJobValues}
+                                setStep={setStep}
+                            />
+                        </Fade>
                     )}
 
                     {step === 4 && (
-                        <Step4
-                            jobValues={jobValues}
-                            setJobValues={setJobValues}
-                            setStep={setStep}
-                        />
+                        <Fade in={step === 4}>
+                            <Step4
+                                jobValues={jobValues}
+                                setJobValues={setJobValues}
+                                setStep={setStep}
+                            />
+                        </Fade>
                     )}
 
                     {step === 5 && (
-                        <Step5
-                            jobValues={jobValues}
-                            setJobValues={setJobValues}
-                            setStep={setStep}
-                        />
+                        <Fade in={step === 5}>
+                            <Step5
+                                jobValues={jobValues}
+                                setJobValues={setJobValues}
+                                setStep={setStep}
+                            />
+                        </Fade>
                     )}
                 </Box>
             </Layout>
         </>
     );
 }
+
+export const getServerSideProps = (async (_) => {
+    const signedIn = await isSignedIn();
+
+    return { props: { signedIn } };
+}) satisfies GetServerSideProps<PageProps>;
 
 const Step1 = ({
     jobValues,
@@ -284,8 +307,9 @@ const Step1 = ({
                     value={jobValues.location}
                 />
                 <FormHelperText>
-                    Enter the Location of where the Job will be located, feel
-                    free to put remote if the job can be done from anywhere!
+                    Enter the Location of where the Job will be located e.g.
+                    London, UK, feel free to put remote if the job can be done
+                    from anywhere!
                 </FormHelperText>
             </FormControl>
             <Divider my="1rem" />
@@ -548,6 +572,8 @@ const Step4 = ({
         event.preventDefault();
         setStep(5);
     };
+    const [howToApply, setHowToApply] = useState("url");
+
     return (
         <form onSubmit={handleSubmit}>
             <FormControl
@@ -580,43 +606,69 @@ const Step4 = ({
             </FormControl>
             <Divider my="1rem" />
 
-            <FormControl
-                isInvalid={jobValues.howToApply === "http://"}
-                isRequired
-            >
-                <FormLabel>How To Apply</FormLabel>
-                <Input
-                    size={"lg"}
-                    id="howToApply"
-                    type="url"
-                    placeholder="http://example.com/apply"
-                    onChange={(e) =>
-                        setJobValues({
-                            ...jobValues,
-                            howToApply: e.target.value,
-                        })
-                    }
-                    value={
-                        jobValues.howToApply === ""
-                            ? "http://"
-                            : jobValues.howToApply
-                    }
-                />
-                <FormHelperText>
-                    Enter the URL the applicant should be directed to when they
-                    click apply. Please include either the http:// or https://
-                    prefix.
-                </FormHelperText>
+            <FormControl isRequired>
+                <FormLabel>
+                    How would you like to receive applications?
+                </FormLabel>
+                <RadioGroup onChange={setHowToApply} value={howToApply}>
+                    <Stack direction="row">
+                        <Radio value="url">Via a link to your website</Radio>
+                        <Radio value="email">Via email</Radio>
+                    </Stack>
+                </RadioGroup>
+                {howToApply === "url" ? (
+                    <>
+                        <Input
+                            size={"lg"}
+                            id="howToApplyWebsite"
+                            type="url"
+                            placeholder="http://example.com/apply"
+                            onChange={(e) =>
+                                setJobValues({
+                                    ...jobValues,
+                                    howToApply: e.target.value,
+                                })
+                            }
+                            value={jobValues.howToApply}
+                        />
+                        <FormHelperText>
+                            Enter the URL the applicant should be directed to
+                            when they click apply. Please include either the
+                            http:// or https:// prefix.
+                        </FormHelperText>
+                    </>
+                ) : (
+                    <>
+                        <Input
+                            size={"lg"}
+                            id="howToApplyEmail"
+                            type="email"
+                            placeholder="jobs@upfrontjobs.co.uk"
+                            onChange={(e) =>
+                                setJobValues({
+                                    ...jobValues,
+                                    howToApply: e.target.value,
+                                })
+                            }
+                            value={jobValues.howToApply}
+                        />
+                        <FormHelperText>
+                            Enter the email address the applicant should use to
+                            contact the recruiter about this job.
+                        </FormHelperText>
+                    </>
+                )}
             </FormControl>
+
             <Divider my="1rem" />
 
             <FormControl isRequired>
-                <FormLabel>Recruiter Email</FormLabel>
+                <FormLabel>Your Login Email</FormLabel>
                 <Input
                     size={"lg"}
                     id="loginEmail"
                     type="text"
-                    placeholder="Recruiter Email"
+                    placeholder={`johnsmith@${jobValues.companyName.toLocaleLowerCase()}.com`}
                     onChange={(e) =>
                         setJobValues({
                             ...jobValues,
@@ -627,7 +679,8 @@ const Step4 = ({
                 />
                 <FormHelperText>
                     Enter the email address you (the recruiter/hiring manager)
-                    will use to log in to Upfront and manage your job posts.
+                    will use to log in to Upfront and manage/view your job
+                    posts.
                 </FormHelperText>
             </FormControl>
             <Divider my="1rem" />

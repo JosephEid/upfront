@@ -167,17 +167,7 @@ func NewCdkStack(scope constructs.Construct, id string, props *CdkStackProps) aw
 			Name: jsii.String("PK"),
 			Type: awsdynamodb.AttributeType_STRING,
 		},
-		ProjectionType: awsdynamodb.ProjectionType_INCLUDE,
-		NonKeyAttributes: jsii.Strings(
-			"createdAt",
-			"clickedApplyCount",
-			"title",
-			"companyLogoURL",
-			"status",
-			"updatedAt",
-			"planDuration",
-			"planType",
-		),
+		ProjectionType: awsdynamodb.ProjectionType_ALL,
 	})
 
 	upfrontTable.AddGlobalSecondaryIndex(&awsdynamodb.GlobalSecondaryIndexPropsV2{

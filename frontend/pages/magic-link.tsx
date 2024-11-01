@@ -1,12 +1,13 @@
 import Head from "next/head";
-import { Box, Button, Center, Divider, Input, Text } from "@chakra-ui/react";
+import { Center, Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
 import React from "react";
 import { GetServerSideProps } from "next";
 import { signIn, confirmSignIn } from "aws-amplify/auth";
 import { isSignedIn } from "./api/signed_in";
+import { PageProps } from ".";
 
-interface MagicLinkProps {
+interface MagicLinkProps extends PageProps {
     email: string;
     token: string;
 }
@@ -29,7 +30,7 @@ export default function Login(props: MagicLinkProps) {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <Layout>
+            <Layout signedIn={props.signedIn}>
                 <Center>
                     <Text>Login successful, redirecting to dashboard...</Text>
                 </Center>
@@ -39,11 +40,6 @@ export default function Login(props: MagicLinkProps) {
 }
 
 export const getServerSideProps = (async (context) => {
-    const props: MagicLinkProps = {
-        email: context.query.email as string,
-        token: context.query.token as string,
-    };
-
     const signedIn = await isSignedIn();
     if (signedIn) {
         return {
@@ -53,6 +49,12 @@ export const getServerSideProps = (async (context) => {
             },
         };
     }
+
+    const props: MagicLinkProps = {
+        email: context.query.email as string,
+        token: context.query.token as string,
+        signedIn: signedIn,
+    };
 
     const cognitoUser = await signIn({
         username: props.email,

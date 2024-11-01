@@ -4,8 +4,9 @@ import Layout from "@/components/Layout";
 import React, { useState } from "react";
 import { isSignedIn } from "./api/signed_in";
 import { GetServerSideProps } from "next";
+import { PageProps } from ".";
 
-export default function Login() {
+export default function Login(props: PageProps) {
     const [email, setEmail] = useState("");
     const [error, setError] = useState(false);
     const [complete, setComplete] = useState(false);
@@ -53,7 +54,7 @@ export default function Login() {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <Layout>
+            <Layout signedIn={props.signedIn}>
                 <Center>
                     <Box>
                         <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
@@ -118,5 +119,5 @@ export const getServerSideProps = (async (context) => {
         };
     }
 
-    return { props: { text: "hey" } };
-}) satisfies GetServerSideProps;
+    return { props: { signedIn } };
+}) satisfies GetServerSideProps<PageProps>;

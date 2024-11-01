@@ -28,7 +28,7 @@ export default async function handler(
                 successURL: `${req.headers.origin}/success`,
                 cancelURL: `${req.headers.origin}/post-job`,
             };
-            const url = `https://ol2h87cdyg.execute-api.eu-west-2.amazonaws.com/prod/upfront/checkout-session`;
+            const url = `https://m7kkswah50.execute-api.eu-west-2.amazonaws.com/prod/upfront/checkout-session`;
 
             const checkoutSessionResponse = await fetch(url, {
                 method: "POST", // *GET, POST, PUT, DELETE, etc.

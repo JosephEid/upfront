@@ -1,16 +1,25 @@
 import Head from "next/head";
-import { Box, Button, Center, Divider, Input, Text } from "@chakra-ui/react";
+import {
+    Button,
+    Table,
+    TableContainer,
+    Tbody,
+    Td,
+    Text,
+    Th,
+    Thead,
+    Tr,
+} from "@chakra-ui/react";
 import Layout from "@/components/Layout";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { GetServerSideProps } from "next";
-import { signIn, confirmSignIn, getCurrentUser } from "aws-amplify/auth";
 import { Amplify } from "aws-amplify";
 import { isSignedIn } from "./api/signed_in";
 import { JobPostItem } from "./api/checkout_session/[id]";
 import { getRecruiterJobs } from "./api/recruiter_jobs";
-import { JobPost } from "@/components/JobPost";
+import { PageProps } from ".";
 
-interface DashboardProps {
+interface DashboardProps extends PageProps {
     jobs: JobPostItem[];
     email: string;
 }
@@ -18,8 +27,8 @@ interface DashboardProps {
 Amplify.configure({
     Auth: {
         Cognito: {
-            userPoolId: "eu-west-2_mXJEXo9bq",
-            userPoolClientId: "4krvn7bk6oeg0vavpt73igam23",
+            userPoolId: "eu-west-2_Cm0yER0fG",
+            userPoolClientId: "p63epfbef86asirih4ec51f8",
             loginWith: {
                 email: true,
             },
@@ -45,21 +54,55 @@ export default function Dashboard(props: DashboardProps) {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <Layout>
+            <Layout signedIn={props.signedIn}>
                 <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
                     Dashboard for {props.email}
                 </Text>
-                {props.jobs &&
-                    props.jobs?.map((x, i) => {
-                        return (
-                            <Box my="1rem" key={i}>
-                                <JobPost {...x} />
-                            </Box>
-                        );
-                    })}
+                <Text fontSize={"2rem"} fontWeight={700} my="1rem">
+                    Jobs you've posted
+                </Text>
+                <TableContainer>
+                    <Table>
+                        <Thead>
+                            <Tr>
+                                <Th>Title</Th>
+                                <Th>Location</Th>
+                                <Th>Created At</Th>
+                                <Th>Last Updated</Th>
+                                <Th>Plan Type</Th>
+                                <Th>Duration</Th>
+                                <Th>Expires At</Th>
+                                <Th>No. Apply Clicks</Th>
+                                <Th>View/Manage</Th>
+                            </Tr>
+                        </Thead>
+                        <Tbody>
+                            {props.jobs &&
+                                props.jobs?.map((x, i) => {
+                                    return (
+                                        <Tr key={i}>
+                                            <Td>{x.title}</Td>
+                                            <Td>{x.location}</Td>
+                                            <Td>{x.createdAt}</Td>
+                                            <Td>{x.updatedAt}</Td>
+                                            <Td>{x.planType}</Td>
+                                            <Td>{x.planDuration}</Td>
+                                            <Td>{x.expiresAt}</Td>
+                                            <Td>{x.clickedApplyCount}</Td>
+                                            <Td>
+                                                <Button onClick={() => {}}>
+                                                    View
+                                                </Button>
+                                            </Td>
+                                        </Tr>
+                                    );
+                                })}
+                        </Tbody>
+                    </Table>
+                </TableContainer>
                 {!props.jobs ||
                     (props.jobs.length === 0 && (
-                        <Text>No Jobs found matching your criteria...</Text>
+                        <Text>No Jobs Posted Yet...</Text>
                     ))}
             </Layout>
         </>
@@ -78,5 +121,5 @@ export const getServerSideProps = (async (context) => {
     }
 
     const data = await getRecruiterJobs();
-    return { props: { jobs: data.jobs, email: data.email } };
+    return { props: { jobs: data.jobs, email: data.email, signedIn } };
 }) satisfies GetServerSideProps<DashboardProps>;

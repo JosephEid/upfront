@@ -1,13 +1,18 @@
 import Head from "next/head";
-import { Text } from "@chakra-ui/react";
+import { Button, Text } from "@chakra-ui/react";
 import Layout from "@/components/Layout";
-import useSWR from "swr";
-import { useRouter } from "next/router";
-import { JobPost, JobPostProps } from "@/components/JobPost";
+import { JobPost } from "@/components/JobPost";
 import { GetServerSideProps } from "next";
-import { getCheckoutSession } from "./api/checkout_session/[id]";
+import { getCheckoutSession, JobPostItem } from "./api/checkout_session/[id]";
+import { PageProps } from ".";
+import { isSignedIn } from "./api/signed_in";
+import { useRouter } from "next/router";
 
-export default function Success({ jobPost }: { jobPost: JobPostProps }) {
+interface SuccessProps extends PageProps {
+    jobPost: JobPostItem;
+}
+export default function Success({ jobPost, signedIn }: SuccessProps) {
+    const router = useRouter();
     return (
         <>
             <Head>
@@ -25,25 +30,38 @@ export default function Success({ jobPost }: { jobPost: JobPostProps }) {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <Layout>
+            <Layout signedIn={signedIn}>
                 <Text
                     fontSize={"2.5rem"}
                     my="1rem"
                     fontWeight="800"
                     color={"upfront.300"}
                 >
-                    Success
+                    Payment Success
                 </Text>
-                <Text fontWeight={700} fontSize={"2rem"} mb="1rem">
-                    Where{" "}
-                    <Text as="span" fontWeight="800" color={"upfront.300"}>
-                        salaries
-                    </Text>{" "}
-                    are always{" "}
-                    <Text as="span" fontWeight="800" color={"upfront.300"}>
-                        provided.
-                    </Text>
+                <Text fontSize={"2rem"} mb="1rem">
+                    An email has been sent to {jobPost.loginEmail} confirming
+                    your plan purchase. <br />
+                    You may now sign in to the Upfront portal to view/manage
+                    your job posts!
                 </Text>
+                {!signedIn && (
+                    <Button
+                        display={{ base: "none", md: "inline-flex" }}
+                        fontSize={"1rem"}
+                        fontWeight={600}
+                        color={"white"}
+                        bg={"upfront.300"}
+                        onClick={() => router.push("/login")}
+                        _hover={{
+                            bg: "upfront.200",
+                        }}
+                        mb={"1rem"}
+                    >
+                        Recruiter Log In
+                    </Button>
+                )}
+
                 {jobPost ? <JobPost {...jobPost} /> : "loading..."}
             </Layout>
         </>
@@ -51,8 +69,10 @@ export default function Success({ jobPost }: { jobPost: JobPostProps }) {
 }
 
 export const getServerSideProps = (async (context) => {
-    const checkoutSessionResponse: JobPostProps = await getCheckoutSession(
+    const checkoutSessionResponse: JobPostItem = await getCheckoutSession(
         context.query.id as string
     );
-    return { props: { jobPost: checkoutSessionResponse } };
-}) satisfies GetServerSideProps<{ jobPost: JobPostProps }>;
+    const signedIn = await isSignedIn();
+
+    return { props: { jobPost: checkoutSessionResponse, signedIn } };
+}) satisfies GetServerSideProps<SuccessProps>;

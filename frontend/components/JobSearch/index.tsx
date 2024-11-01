@@ -132,6 +132,7 @@ export default function JobSearch(props: JobSearchProps) {
                             type="text"
                             placeholder="What role are you looking for, e.g. Skills, Company?"
                             borderRightRadius={{ sm: "0" }}
+                            mb={{ base: "1rem", md: "0" }}
                         />
                     </InputGroup>
                     {criteriaSuggestions.length > 0 && (

@@ -60,6 +60,7 @@ type JobPostItem struct {
 	SessionID         string `dynamodbav:"sessionID" json:"sessionID"`
 	CreatedAt         string `dynamodbav:"createdAt" json:"createdAt"`
 	UpdatedAt         string `dynamodbav:"updatedAt" json:"updatedAt"`
+	ExpiresAt         string `dynamodbav:"expiresAt" json:"expiresAt"`
 	ClickedApplyCount int    `dynamodbav:"clickedApplyCount" json:"clickedApplyCount"`
 	Status            Status `dynamodbav:"status" json:"status"`
 }

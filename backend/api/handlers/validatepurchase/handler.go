@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/a-h/pathvars"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -121,8 +122,13 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	now := time.Now()
+	updatedAt, expiresAt := now, now.AddDate(0, 0, 90)
+
 	upd := expression.
-		Set(expression.Name("status"), expression.Value(models.Active))
+		Set(expression.Name("status"), expression.Value(models.Active)).
+		Set(expression.Name("updatedAt"), expression.Value(updatedAt.Format(time.RFC3339))).
+		Set(expression.Name("expiresAt"), expression.Value(expiresAt.Format(time.RFC3339)))
 
 	expr, err := expression.NewBuilder().WithUpdate(upd).Build()
 

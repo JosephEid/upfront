@@ -26,24 +26,11 @@ import { NextRouter, useRouter } from "next/router";
 import { signOut } from "aws-amplify/auth";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
-export default function Navbar() {
+export default function Navbar({ signedIn }: { signedIn: boolean }) {
     const { isOpen, onToggle } = useDisclosure();
     const router = useRouter();
 
-    const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(
-        undefined
-    );
-    useEffect(() => {
-        const checkSignedIn = async () => {
-            const signedIn = await fetch("/api/signed_in");
-
-            const body: boolean = await signedIn.json();
-
-            setIsSignedIn(body);
-        };
-
-        checkSignedIn();
-    }, []);
+    const [isSignedIn, setIsSignedIn] = useState<boolean>(signedIn);
 
     return (
         <Box mb={{ base: 0, md: "1rem" }} mx={{ base: 0, md: "2rem" }}>
@@ -113,23 +100,46 @@ export default function Navbar() {
                     </Button>
                     {isSignedIn !== undefined &&
                         (isSignedIn === true ? (
-                            <Button
-                                display={{ base: "none", md: "inline-flex" }}
-                                fontSize={"1rem"}
-                                fontWeight={600}
-                                color={"white"}
-                                bg={"upfront.300"}
-                                onClick={async () => {
-                                    await fetch("/api/sign_out");
-                                    setIsSignedIn(false);
-                                    router.push("/login");
-                                }}
-                                _hover={{
-                                    bg: "upfront.200",
-                                }}
-                            >
-                                Log Out
-                            </Button>
+                            <>
+                                <Button
+                                    display={{
+                                        base: "none",
+                                        md: "inline-flex",
+                                    }}
+                                    fontSize={"1rem"}
+                                    fontWeight={600}
+                                    color={"white"}
+                                    bg={"upfront.300"}
+                                    onClick={async () => {
+                                        router.push("/dashboard");
+                                    }}
+                                    _hover={{
+                                        bg: "upfront.200",
+                                    }}
+                                >
+                                    Recruiter Dashboard
+                                </Button>
+                                <Button
+                                    display={{
+                                        base: "none",
+                                        md: "inline-flex",
+                                    }}
+                                    fontSize={"1rem"}
+                                    fontWeight={600}
+                                    color={"white"}
+                                    bg={"upfront.300"}
+                                    onClick={async () => {
+                                        await fetch("/api/sign_out");
+                                        setIsSignedIn(false);
+                                        router.push("/login");
+                                    }}
+                                    _hover={{
+                                        bg: "upfront.200",
+                                    }}
+                                >
+                                    Log Out
+                                </Button>
+                            </>
                         ) : (
                             <Button
                                 display={{ base: "none", md: "inline-flex" }}
@@ -264,7 +274,7 @@ const MobileNav = ({
 }: {
     router: NextRouter;
     isSignedIn: boolean | undefined;
-    setIsSignedIn: Dispatch<SetStateAction<boolean | undefined>>;
+    setIsSignedIn: Dispatch<SetStateAction<boolean>>;
 }) => {
     return (
         <Stack

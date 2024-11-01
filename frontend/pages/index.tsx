@@ -7,8 +7,17 @@ import { JobPost } from "@/components/JobPost";
 import React, { useState } from "react";
 import { JobPostItem } from "./api/checkout_session/[id]";
 import { getAllJobs } from "./api/all_jobs";
+import { isSignedIn } from "./api/signed_in";
 
-export default function Home({ jobs }: { jobs: JobPostItem[] }) {
+export interface PageProps {
+    signedIn: boolean;
+}
+
+interface HomeProps extends PageProps {
+    jobs: JobPostItem[];
+}
+
+export default function Home({ jobs, signedIn }: HomeProps) {
     const [jobPosts, setJobPosts] = useState(jobs);
     return (
         <>
@@ -27,7 +36,7 @@ export default function Home({ jobs }: { jobs: JobPostItem[] }) {
                     href="/upfront/svg/favicon-no-background.svg"
                 />
             </Head>
-            <Layout>
+            <Layout signedIn={signedIn}>
                 <Text fontSize={"2.5rem"} fontWeight={700} my="1rem">
                     Don&apos;t waste time. Be{" "}
                     <Text as="span" fontWeight="800" color={"upfront.300"}>
@@ -65,6 +74,7 @@ export default function Home({ jobs }: { jobs: JobPostItem[] }) {
 }
 
 export const getServerSideProps = (async (context) => {
+    const signedIn = await isSignedIn();
     const getAllJobsResponse: JobPostItem[] = await getAllJobs();
-    return { props: { jobs: getAllJobsResponse } };
-}) satisfies GetServerSideProps<{ jobs: JobPostItem[] }>;
+    return { props: { jobs: getAllJobsResponse, signedIn } };
+}) satisfies GetServerSideProps<HomeProps>;
